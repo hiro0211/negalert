@@ -11,7 +11,7 @@ export function ReviewGrowthChart({ data }: ReviewGrowthChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>レビュー推移</CardTitle>
+        <CardTitle className="text-sm font-medium text-gray-700">レビュー推移</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
@@ -19,15 +19,16 @@ export function ReviewGrowthChart({ data }: ReviewGrowthChartProps) {
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis
               dataKey="month"
-              tick={{ fontSize: 12, fill: '#4b5563' }}
+              tick={{ fontSize: 12, fill: '#374151' }}
               stroke="#9ca3af"
             />
-            <YAxis tick={{ fontSize: 12, fill: '#4b5563' }} stroke="#9ca3af" />
+            <YAxis tick={{ fontSize: 12, fill: '#374151' }} stroke="#9ca3af" />
             <Tooltip
               contentStyle={{
                 backgroundColor: '#fff',
                 border: '1px solid #e5e7eb',
                 borderRadius: '6px',
+                color: '#111827',
               }}
             />
             <Line

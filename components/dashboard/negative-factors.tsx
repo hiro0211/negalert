@@ -11,7 +11,7 @@ export function NegativeFactors({ data }: NegativeFactorsProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>ネガ要因 TOP3</CardTitle>
+        <CardTitle className="text-xl font-medium text-gray-700">ネガ要因 TOP3</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={250}>

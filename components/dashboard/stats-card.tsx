@@ -16,10 +16,10 @@ export function StatsCard({ title, value, change, icon: Icon, trend, valueClassN
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-gray-700">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-gray-500" />
+        <Icon className="h-4 w-4 text-gray-700" />
       </CardHeader>
       <CardContent>
-        <div className={cn('text-3xl font-bold', valueClassName)}>{value}</div>
+        <div className={cn('text-3xl font-bold text-gray-900', valueClassName)}>{value}</div>
         {change !== undefined && (
           <div className="mt-2 flex items-center text-sm">
             {trend === 'up' ? (
@@ -30,7 +30,7 @@ export function StatsCard({ title, value, change, icon: Icon, trend, valueClassN
             <span className={trend === 'up' ? 'text-green-500' : 'text-red-500'}>
               {change > 0 ? '+' : ''}{change}
             </span>
-            <span className="ml-1 text-gray-600">前月比</span>
+            <span className="ml-1 text-gray-700">前月比</span>
           </div>
         )}
       </CardContent>

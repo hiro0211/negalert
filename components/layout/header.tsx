@@ -1,11 +1,29 @@
 'use client';
 
+import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Search, User } from 'lucide-react';
-import { mockUser } from '@/lib/mock/user';
+import { Button } from '@/components/ui/button';
+import { Search, User, LogOut } from 'lucide-react';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 export function Header() {
+  const { user, logout } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    if (confirm('ログアウトしますか?')) {
+      try {
+        setIsLoggingOut(true);
+        await logout();
+      } catch (error) {
+        console.error('ログアウトエラー:', error);
+        alert('ログアウトに失敗しました');
+        setIsLoggingOut(false);
+      }
+    }
+  };
+
   return (
     <header className="flex h-16 items-center justify-between border-b bg-white px-6">
       <div className="flex items-center gap-4">
@@ -14,7 +32,7 @@ export function Header() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="loc1">{mockUser.location.name}</SelectItem>
+            <SelectItem value="loc1">{user?.location.name || 'ロケーション'}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -40,12 +58,21 @@ export function Header() {
         </div>
         <div className="flex items-center gap-2">
           <div className="text-right">
-            <div className="text-sm font-medium">{mockUser.name}</div>
-            <div className="text-xs text-gray-600">{mockUser.email}</div>
+            <div className="text-sm font-medium">{user?.name || 'ユーザー'}</div>
+            <div className="text-xs text-gray-600">{user?.email || ''}</div>
           </div>
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white">
             <User className="h-5 w-5" />
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="ml-2"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </header>

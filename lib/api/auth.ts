@@ -1,186 +1,105 @@
 /**
  * 認証API層（Google OAuth対応）
- * Google My Business API連携のための認証フロー管理
+ * Supabase Authを使用したGoogle OAuth認証フロー管理
  */
 
-import { AuthSession, GoogleOAuthConfig } from './types';
-import { generateGoogleAuthUrl, exchangeCodeForTokens } from './google-oauth';
-import { mockUser } from '../mock/user';
+import { AuthSession } from './types';
+import { createClient } from '../supabase/client';
 
 /**
  * Google OAuthフロー開始
- * 認証URLを生成してリダイレクト用に返す
+ * Supabase AuthのGoogle OAuthを使用
  * 
  * @returns 認証URL
  */
 export async function initiateGoogleOAuth(): Promise<{ authUrl: string }> {
-  // 現在: モック実装（ダッシュボードにリダイレクト）
-  // 将来: 実際のGoogle OAuth URLを生成
+  const supabase = createClient();
   
-  // 本番実装例（コメントアウト）
-  /*
-  const config: GoogleOAuthConfig = {
-    clientId: process.env.GOOGLE_CLIENT_ID!,
-    redirectUri: process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI!,
-    scopes: [
-      'https://www.googleapis.com/auth/business.manage',
-      'https://www.googleapis.com/auth/userinfo.email',
-      'https://www.googleapis.com/auth/userinfo.profile',
-    ],
-  };
-  
-  const authUrl = generateGoogleAuthUrl(config);
-  return { authUrl };
-  */
-  
-  // モック: ダッシュボードにリダイレクト
-  const config: GoogleOAuthConfig = {
-    clientId: 'mock-client-id',
-    redirectUri: 'http://localhost:3000/api/auth/callback',
-    scopes: [],
-  };
-  
-  const authUrl = generateGoogleAuthUrl(config);
-  return { authUrl };
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback`,
+      scopes: 'https://www.googleapis.com/auth/business.manage',
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      },
+    },
+  });
+
+  if (error) {
+    console.error('Google OAuth開始エラー:', error);
+    throw new Error('認証の開始に失敗しました');
+  }
+
+  if (!data.url) {
+    throw new Error('認証URLの生成に失敗しました');
+  }
+
+  return { authUrl: data.url };
 }
 
 /**
  * OAuth コールバック処理
- * 認証コードをトークンに交換してセッションを作成
- * 
- * @param code - Google OAuthから取得した認証コード
- * @returns 認証セッション
+ * Supabase Authがコールバックを処理するため、この関数は不要
+ * セッション情報はSupabaseが自動的に管理
  */
-export async function handleOAuthCallback(code: string): Promise<AuthSession> {
-  // 現在: モック実装
-  // 将来: 認証コードをトークンに交換し、ユーザー情報を取得
-  
-  try {
-    // トークン交換
-    const tokens = await exchangeCodeForTokens(code);
-    
-    // 本番実装例（コメントアウト）
-    /*
-    // Google User Info APIでユーザー情報を取得
-    const userInfoResponse = await fetch(
-      'https://www.googleapis.com/oauth2/v2/userinfo',
-      {
-        headers: {
-          Authorization: `Bearer ${tokens.accessToken}`,
-        },
-      }
-    );
-    
-    if (!userInfoResponse.ok) {
-      throw new Error('ユーザー情報の取得に失敗しました');
-    }
-    
-    const userInfo = await userInfoResponse.json();
-    
-    // Supabaseにユーザーを保存または更新
-    // ...
-    
-    return {
-      user: {
-        id: userInfo.id,
-        name: userInfo.name,
-        email: userInfo.email,
-        location: {
-          id: 'location-1',
-          name: 'サンプルレストラン',
-          address: '東京都渋谷区',
-        },
-      },
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
-      expiresAt: Date.now() + tokens.expiresIn * 1000,
-      provider: 'google',
-    };
-    */
-    
-    // モック: ダミーセッションを返す
-    return {
-      user: mockUser,
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
-      expiresAt: Date.now() + tokens.expiresIn * 1000,
-      provider: 'google',
-    };
-  } catch (error) {
-    console.error('OAuth コールバック処理エラー:', error);
-    throw new Error('認証に失敗しました');
-  }
-}
 
 /**
  * 現在のセッションを取得
+ * Supabase Authからセッション情報を取得
  * 
  * @returns 認証セッション（ログインしていない場合はnull）
  */
 export async function getSession(): Promise<AuthSession | null> {
-  // 現在: モック実装（常にログイン済みとして扱う）
-  // 将来: Cookie、LocalStorage、またはSupabase Authからセッションを取得
+  const supabase = createClient();
   
-  // 本番実装例（コメントアウト）
-  /*
-  // Cookieからセッション情報を取得
-  const sessionCookie = document.cookie
-    .split('; ')
-    .find(row => row.startsWith('session='));
-  
-  if (!sessionCookie) {
+  const { data: { session }, error } = await supabase.auth.getSession();
+
+  if (error) {
+    console.error('セッション取得エラー:', error);
     return null;
   }
-  
-  const sessionData = JSON.parse(
-    decodeURIComponent(sessionCookie.split('=')[1])
-  );
-  
-  // トークンの有効期限をチェック
-  if (Date.now() >= sessionData.expiresAt) {
-    // トークンをリフレッシュ
-    const refreshed = await refreshAccessToken(sessionData.refreshToken);
-    sessionData.accessToken = refreshed.accessToken;
-    sessionData.expiresAt = Date.now() + refreshed.expiresIn * 1000;
-    
-    // Cookieを更新
-    // ...
+
+  if (!session) {
+    return null;
   }
-  
-  return sessionData;
-  */
-  
-  // モック: ダミーセッションを返す
+
+  // Supabaseのセッションを内部のAuthSession型に変換
   return {
-    user: mockUser,
-    accessToken: 'mock-access-token',
-    refreshToken: 'mock-refresh-token',
-    expiresAt: Date.now() + 3600000, // 1時間後
+    user: {
+      id: session.user.id,
+      name: session.user.user_metadata.full_name || session.user.user_metadata.name || session.user.email || 'ユーザー',
+      email: session.user.email || '',
+      location: {
+        id: 'location-1',
+        name: 'サンプルレストラン',
+        address: '東京都渋谷区',
+      },
+    },
+    accessToken: session.access_token,
+    refreshToken: session.refresh_token || '',
+    expiresAt: session.expires_at ? session.expires_at * 1000 : Date.now() + 3600000,
     provider: 'google',
   };
 }
 
 /**
  * ログアウト
- * セッションをクリアする
+ * Supabase Authのセッションをクリア
  */
 export async function signOut(): Promise<void> {
-  // 現在: モック実装（何もしない）
-  // 将来: Cookie、LocalStorage、Supabase Authのセッションをクリア
+  const supabase = createClient();
   
-  console.log('[Mock] ログアウト');
+  const { error } = await supabase.auth.signOut();
   
-  // 本番実装例（コメントアウト）
-  /*
-  // Cookieを削除
-  document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-  
-  // Supabase Authからサインアウト
-  // await supabase.auth.signOut();
-  
+  if (error) {
+    console.error('ログアウトエラー:', error);
+    throw new Error('ログアウトに失敗しました');
+  }
+
   // ログインページにリダイレクト
   window.location.href = '/login';
-  */
 }
 
 /**

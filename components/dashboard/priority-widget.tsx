@@ -13,7 +13,7 @@ export function PriorityWidget({ unrepliedNegativeCount, pendingTodosCount }: Pr
   return (
     <Card className="border-red-200 bg-red-50">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="text-xl font-medium text-gray-700">
           <AlertCircle className="h-5 w-5 text-red-500" />
           今日やること
         </CardTitle>
@@ -22,13 +22,13 @@ export function PriorityWidget({ unrepliedNegativeCount, pendingTodosCount }: Pr
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">未返信ネガティブレビュー</span>
-              <Badge variant="destructive">{unrepliedNegativeCount}件</Badge>
+              <span className="text-sm font-medium text-gray-700">未返信ネガティブレビュー</span>
+              <Badge variant="destructive" className="bg-yellow-100 text-yellow-800">{unrepliedNegativeCount}件</Badge>
             </div>
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">要対応ToDo</span>
+              <span className="text-sm font-medium text-gray-700">要対応ToDo</span>
               <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
                 {pendingTodosCount}件
               </Badge>
@@ -37,7 +37,7 @@ export function PriorityWidget({ unrepliedNegativeCount, pendingTodosCount }: Pr
         </div>
         <div className="flex gap-2">
           <Button asChild className="flex-1">
-            <Link href="/dashboard/inbox">
+            <Link href="/dashboard/inbox" className="bg-yellow-100 text-yellow-800">
               Inboxを開く
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>

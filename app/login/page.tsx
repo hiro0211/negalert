@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { InlineLoadingSpinner } from '@/components/common/loading-spinner';
@@ -9,15 +10,30 @@ import { useAuth } from '@/lib/hooks/useAuth';
 export default function LoginPage() {
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const error = searchParams.get('error');
+    if (error) {
+      const errorMessages: Record<string, string> = {
+        no_code: '認証コードが見つかりませんでした',
+        auth_failed: '認証に失敗しました',
+        access_denied: 'アクセスが拒否されました',
+      };
+      setErrorMessage(errorMessages[error] || '認証エラーが発生しました');
+    }
+  }, [searchParams]);
 
   const handleGoogleLogin = async () => {
     try {
       setIsLoading(true);
+      setErrorMessage(null);
       await login();
       // login()内でリダイレクトされるため、ここには到達しない
     } catch (error) {
       console.error('OAuth開始エラー:', error);
-      alert('ログインに失敗しました');
+      setErrorMessage('ログインに失敗しました');
       setIsLoading(false);
     }
   };
@@ -26,16 +42,22 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-4xl font-bold text-primary mb-2">
+          <CardTitle className="text-4xl font-bold text-gray-900 mb-2">
             NegAlert
           </CardTitle>
-          <p className="text-gray-700">Googleレビュー特化管理システム</p>
+          <p className="text-gray-800 font-medium">Googleレビュー特化管理システム</p>
         </CardHeader>
         <CardContent className="space-y-4">
+          {errorMessage && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {errorMessage}
+            </div>
+          )}
+          
           <Button
             onClick={handleGoogleLogin}
             disabled={isLoading}
-            className="w-full"
+            className="w-full text-gray-600 font-semibold"
             size="lg"
           >
             {isLoading ? (
@@ -68,16 +90,11 @@ export default function LoginPage() {
             )}
           </Button>
 
-          <div className="text-center text-sm text-gray-600">
+          <div className="text-center text-sm text-gray-700">
             <p>Google My Businessアカウントで認証します</p>
-            <p className="mt-2 text-xs">
+            <p className="mt-2 text-xs text-gray-600">
               ログインすると、レビューの閲覧・返信権限を付与します
             </p>
-          </div>
-
-          <div className="mt-6 pt-4 border-t text-center text-xs text-gray-500">
-            <p>※現在はモック実装です</p>
-            <p>実際のGoogle OAuth認証は将来実装されます</p>
           </div>
         </CardContent>
       </Card>

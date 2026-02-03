@@ -18,7 +18,7 @@ export function RatingBreakdown({ data }: RatingBreakdownProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>星評価分布</CardTitle>
+        <CardTitle className="text-sm font-medium text-gray-700">星評価分布</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
@@ -32,13 +32,24 @@ export function RatingBreakdown({ data }: RatingBreakdownProps) {
               paddingAngle={2}
               dataKey="value"
               label={({ name, value }) => `${name}: ${value}`}
+              labelStyle={{ fill: '#111827', fontSize: '12px', fontWeight: '500' }}
             >
               {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip />
-            <Legend />
+            <Tooltip 
+              contentStyle={{
+                backgroundColor: '#fff',
+                border: '1px solid #e5e7eb',
+                borderRadius: '6px',
+                color: '#111827',
+              }}
+            />
+            <Legend 
+              wrapperStyle={{ color: '#374151' }}
+              iconType="circle"
+            />
           </PieChart>
         </ResponsiveContainer>
       </CardContent>

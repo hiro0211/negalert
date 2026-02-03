@@ -45,7 +45,7 @@ export function ReviewTable({ reviews }: ReviewTableProps) {
                 className="cursor-pointer hover:bg-gray-50"
                 onClick={() => setSelectedReview(review)}
               >
-                <TableCell className="font-medium">
+                <TableCell className="font-medium text-gray-900">
                   {format(new Date(review.date), 'M月d日', { locale: ja })}
                 </TableCell>
                 <TableCell>
@@ -68,7 +68,7 @@ export function ReviewTable({ reviews }: ReviewTableProps) {
                         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                       />
                     </svg>
-                    <span className="text-sm">Google</span>
+                    <span className="text-sm text-gray-800">Google</span>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -76,8 +76,8 @@ export function ReviewTable({ reviews }: ReviewTableProps) {
                 </TableCell>
                 <TableCell>
                   <div className="max-w-md">
-                    <div className="text-sm">{truncateText(review.text)}</div>
-                    <div className="mt-1 text-xs text-gray-600">{review.authorName}</div>
+                    <div className="text-sm text-gray-900">{truncateText(review.text)}</div>
+                    <div className="mt-1 text-xs text-gray-700">{review.authorName}</div>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -104,7 +104,7 @@ export function ReviewTable({ reviews }: ReviewTableProps) {
         </Table>
       </div>
 
-      <div className="mt-4 flex items-center justify-between text-sm text-gray-700">
+      <div className="mt-4 flex items-center justify-between text-sm text-gray-800">
         <div>Showing 1-{reviews.length} of {reviews.length} results</div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" disabled>
