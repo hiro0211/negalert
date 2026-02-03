@@ -9,7 +9,7 @@
 - **Access Token** (`provider_token`): Google APIへのアクセスに使用（有効期限: 1時間）
 - **Refresh Token** (`provider_refresh_token`): Access Tokenの更新に使用（長期有効）
 
-これらのTokenを`user_tokens`テーブルに保存することで、以下が可能になります：
+これらのTokenを`oauth_tokens`テーブルに保存することで、以下が可能になります：
 
 1. ユーザーがログインしていない状態でもGoogle My Business APIを呼び出せる
 2. Access Tokenの有効期限が切れた際、自動的にRefresh Tokenで更新できる
@@ -17,7 +17,7 @@
 
 ## データベース構造
 
-### `user_tokens` テーブル
+### `oauth_tokens` テーブル
 
 | カラム名 | 型 | 説明 |
 |---------|-----|------|
@@ -49,7 +49,7 @@ Supabase Dashboardまたはローカル環境でマイグレーションを実�
 1. [Supabase Dashboard](https://supabase.com/dashboard) を開く
 2. プロジェクトを選択
 3. 左側メニューから「SQL Editor」を選択
-4. `supabase/migrations/001_create_user_tokens.sql` の内容をコピー＆ペースト
+4. `supabase/migrations/001_create_user_tokens.sql` の内容をコピー＆ペースト（※テーブル名は`oauth_tokens`に変更済み）
 5. 「Run」をクリックして実行
 
 #### ローカル環境で実行する場合（Supabase CLI使用）
@@ -71,7 +71,7 @@ supabase db push
 2. ログインページで「Googleでログイン」をクリック
 3. Google OAuth同意画面で権限を許可
 4. ダッシュボードにリダイレクトされることを確認
-5. Supabase Dashboardの「Table Editor」で`user_tokens`テーブルを開く
+5. Supabase Dashboardの「Table Editor」で`oauth_tokens`テーブルを開く
 6. 新しいレコードが作成されていることを確認
 
 ## Token管理API
@@ -258,7 +258,7 @@ const reviews = await fetchGoogleReviews(accessToken, locationId);
 if (!refreshToken) {
   // 既存のTokenレコードを取得
   const { data: existingToken } = await supabase
-    .from('user_tokens')
+    .from('oauth_tokens')
     .select('refresh_token')
     .eq('user_id', userId)
     .eq('provider', 'google')
@@ -327,7 +327,7 @@ function decryptToken(encryptedToken: string): string {
 
 ### 2. Row Level Security (RLS)
 
-`user_tokens`テーブルにはRLSが設定されており、以下のポリシーが適用されています：
+`oauth_tokens`テーブルにはRLSが設定されており、以下のポリシーが適用されています：
 
 - ユーザーは自分のTokenのみ閲覧可能
 - ユーザーは自分のTokenのみ更新可能
@@ -349,7 +349,7 @@ function decryptToken(encryptedToken: string): string {
 **原因と対処法**:
 
 1. **マイグレーションが実行されていない**
-   - Supabase Dashboardで`user_tokens`テーブルが存在するか確認
+   - Supabase Dashboardで`oauth_tokens`テーブルが存在するか確認
    - マイグレーションを再実行
 
 2. **RLSポリシーの問題**

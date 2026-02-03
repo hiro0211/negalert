@@ -11,20 +11,33 @@ import { createClient } from '../supabase/client';
  * Supabase AuthのGoogle OAuthを使用
  * ビジネスプロフィールの管理権限とユーザー情報を要求
  * 
+ * 重要: Supabase Dashboardの Google Provider設定で
+ * "Additional OAuth Scopes" に https://www.googleapis.com/auth/business.manage を
+ * 追加する必要があります。
+ * 
  * @returns 認証URL
  */
 export async function initiateGoogleOAuth(): Promise<{ authUrl: string }> {
   const supabase = createClient();
   
+  // サイトURLを取得（window.location.originを優先、なければ環境変数）
+  const siteUrl = typeof window !== 'undefined' 
+    ? window.location.origin 
+    : process.env.NEXT_PUBLIC_SITE_URL;
+  
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback`,
+      redirectTo: `${siteUrl}/api/auth/callback`,
+      // scopes: Supabaseのデフォルトスコープに追加するスコープ
+      // ※ Supabase Dashboardの「Additional OAuth Scopes」と合わせて設定
+      scopes: 'https://www.googleapis.com/auth/business.manage',
       queryParams: {
-        access_type: 'offline', // これがないとRefresh Tokenが貰えない（重要）
-        prompt: 'consent',      // 毎回同意画面を出して確実にTokenを貰う
-        // 必要な権限: ビジネス管理 + 基本情報
-        scope: 'https://www.googleapis.com/auth/business.manage https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+        // access_type: 'offline' は Refresh Token取得に必須
+        access_type: 'offline',
+        // prompt: 'consent' は毎回同意画面を表示し、確実にRefresh Tokenを取得
+        // ※ これがないと2回目以降のログインでRefresh Tokenが返ってこない
+        prompt: 'consent',
       },
     },
   });
@@ -36,6 +49,23 @@ export async function initiateGoogleOAuth(): Promise<{ authUrl: string }> {
 
   if (!data.url) {
     throw new Error('認証URLの生成に失敗しました');
+  }
+
+  // デバッグ: 生成されたURLを確認（開発時のみ）
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔗 生成された認証URL:', data.url);
+    // URLパラメータを解析してログ出力
+    try {
+      const url = new URL(data.url);
+      console.log('📋 URLパラメータ:', {
+        scope: url.searchParams.get('scope'),
+        access_type: url.searchParams.get('access_type'),
+        prompt: url.searchParams.get('prompt'),
+        redirect_uri: url.searchParams.get('redirect_uri'),
+      });
+    } catch {
+      // URL解析に失敗しても続行
+    }
   }
 
   return { authUrl: data.url };

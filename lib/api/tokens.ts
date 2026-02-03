@@ -44,7 +44,7 @@ export async function saveGoogleToken(params: SaveTokenParams): Promise<void> {
   if (!refreshToken) {
     // 既存のTokenレコードを取得
     const { data: existingToken } = await supabase
-      .from('user_tokens')
+      .from('oauth_tokens')
       .select('refresh_token')
       .eq('user_id', userId)
       .eq('provider', 'google')
@@ -58,7 +58,7 @@ export async function saveGoogleToken(params: SaveTokenParams): Promise<void> {
   }
   
   const { error } = await supabase
-    .from('user_tokens')
+    .from('oauth_tokens')
     .upsert(
       {
         user_id: userId,
@@ -99,7 +99,7 @@ export async function getGoogleToken(
   const client = supabase || await createServerClient();
   
   const { data, error } = await client
-    .from('user_tokens')
+    .from('oauth_tokens')
     .select('*')
     .eq('user_id', userId)
     .eq('provider', 'google')
@@ -130,7 +130,7 @@ export async function deleteGoogleToken(
   const client = supabase || await createServerClient();
   
   const { error } = await client
-    .from('user_tokens')
+    .from('oauth_tokens')
     .delete()
     .eq('user_id', userId)
     .eq('provider', 'google');

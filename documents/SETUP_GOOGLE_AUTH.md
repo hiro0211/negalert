@@ -20,9 +20,11 @@
 2. 「認証情報を作成」→「OAuth 2.0 クライアントID」をクリック
 3. アプリケーションの種類: **ウェブアプリケーション**
 4. 名前: `NegAlert` (任意)
-5. **承認済みのリダイレクトURI**に以下を追加:
-   - 開発環境: `http://localhost:3000/api/auth/callback`
-   - 本番環境: `https://your-domain.com/api/auth/callback`
+5. **⚠️ 重要: 承認済みのリダイレクトURI**に以下を追加:
+   - **Supabase側のCallback URL**（必須）: `https://[YOUR-PROJECT-REF].supabase.co/auth/v1/callback`
+     - 例: `https://yhfwuasilnbvflkcbbru.supabase.co/auth/v1/callback`
+     - ※ Supabase Dashboard → Authentication → Providers → Google の「Callback URL (for OAuth)」欄に記載されているURL
+   - ~~開発環境: `http://localhost:3000/api/auth/callback`~~ ← 不要（Supabase経由のため）
 6. 「作成」をクリック
 7. **クライアントID**と**クライアントシークレット**をコピーして保存
 
@@ -56,6 +58,9 @@
 4. 「Google」を有効化
 5. Google Cloud Consoleで取得した**クライアントID**と**クライアントシークレット**を入力
 6. 「Save」をクリック
+
+> **注意**: Supabaseの現在のUIには「Additional OAuth Scopes」欄がありません。
+> スコープはクライアント側の`signInWithOAuth`の`scopes`オプションで指定します（実装済み）。
 
 ### 2.2 リダイレクトURLの設定
 
@@ -119,6 +124,36 @@ npm run dev
 - Cookieの設定を確認してください。
 - ブラウザのCookieが有効になっていることを確認してください。
 - HTTPSを使用している場合は、`secure`フラグが正しく設定されていることを確認してください。
+
+### Refresh Tokenが取得できない（null になる）
+
+**原因1: Googleアカウントで既にアプリへのアクセス許可がある**
+
+Googleは一度アクセス許可を与えたアプリに対して、2回目以降はRefresh Tokenを返さない仕様があります。
+
+**解決方法:**
+1. [Googleアカウントのセキュリティ設定](https://myaccount.google.com/permissions)にアクセス
+2. 該当アプリ（NegAlert）を探して「アクセス権を削除」をクリック
+3. 再度ログインすると、初回と同じように同意画面が表示され、Refresh Tokenが取得できます
+
+**原因2: Google Cloud Consoleのリダイレクトが間違っている**
+
+Google Cloud Console → 認証情報 → OAuth 2.0 クライアントID で、「承認済みのリダイレクトURI」に**Supabase側のCallback URL**（`https://[YOUR-PROJECT-REF].supabase.co/auth/v1/callback`）が設定されているか確認してください。
+
+**原因3: prompt='consent' が正しく送信されていない**
+
+ブラウザの開発者ツールでネットワークタブを開き、Googleへのリダイレクト時のURLパラメータに `prompt=consent` が含まれているか確認してください。
+
+### ビジネスプロフィールの管理権限が表示されない
+
+**確認方法:**
+1. ログイン時にGoogleの同意画面が表示されたら、権限一覧を確認
+2. 「ビジネス プロフィールの管理」が表示されていない場合は以下を確認:
+
+**チェックリスト:**
+- [ ] Google Cloud Console → APIライブラリ → 「Google My Business API」（または「Business Profile API」）が有効になっている
+- [ ] Google Cloud Console → OAuth同意画面 → スコープに `business.manage` が追加されている
+- [ ] アプリのコード（`lib/api/auth.ts`）で `scopes: 'https://www.googleapis.com/auth/business.manage'` が設定されている
 
 ## 6. 本番環境へのデプロイ
 

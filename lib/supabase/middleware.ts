@@ -29,6 +29,8 @@ export async function updateSession(request: NextRequest) {
   );
 
   // セッションをリフレッシュ（重要: getUser()を呼び出すことでセッションが更新される）
+  // ※ OAuth認証コールバック(/api/auth/callback)は直接処理されるため、
+  //   middlewareでは特別な処理は不要
   const {
     data: { user },
   } = await supabase.auth.getUser();
