@@ -1,19 +1,57 @@
+'use client';
+
 import { ReviewDetail } from '@/components/reviews/review-detail';
 import { AIPanel } from '@/components/reviews/ai-panel';
 import { ReplyEditor } from '@/components/reviews/reply-editor';
 import { TodoGenerator } from '@/components/reviews/todo-generator';
 import { NotificationLog } from '@/components/reviews/notification-log';
 import { Button } from '@/components/ui/button';
-import { getReviewById } from '@/lib/mock/reviews';
+import { LoadingSpinner } from '@/components/common/loading-spinner';
+import { ErrorMessage } from '@/components/common/error-message';
+import { useReview } from '@/lib/hooks/useReviews';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 
 export default function ReviewDetailPage({ params }: { params: { id: string } }) {
-  const review = getReviewById(params.id);
+  // カスタムフックでレビューデータを取得
+  const { review, loading, error, refetch } = useReview(params.id);
 
+  // ローディング状態
+  if (loading) {
+    return <LoadingSpinner text="レビューを読み込んでいます..." />;
+  }
+
+  // エラー状態
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/dashboard/inbox">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Inboxに戻る
+          </Link>
+        </Button>
+        <ErrorMessage error={error} onRetry={refetch} />
+      </div>
+    );
+  }
+
+  // レビューが見つからない場合
   if (!review) {
-    notFound();
+    return (
+      <div className="space-y-6">
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/dashboard/inbox">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Inboxに戻る
+          </Link>
+        </Button>
+        <ErrorMessage
+          error={new Error('レビューが見つかりませんでした')}
+          onRetry={refetch}
+        />
+      </div>
+    );
   }
 
   return (

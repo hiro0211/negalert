@@ -2,44 +2,47 @@
 
 import { ReviewFilters } from '@/components/inbox/review-filters';
 import { ReviewTable } from '@/components/inbox/review-table';
-import { mockReviews, getUnrepliedReviews, getNegativeReviews } from '@/lib/mock/reviews';
+import { LoadingSpinner } from '@/components/common/loading-spinner';
+import { ErrorMessage } from '@/components/common/error-message';
+import { useReviews } from '@/lib/hooks/useReviews';
 import { useFilterStore } from '@/lib/store';
+import { filterReviews } from '@/lib/services/review-filters';
+import {
+  countUnrepliedReviews,
+  countHighRiskUnrepliedReviews,
+} from '@/lib/services/review-stats';
 import { useMemo } from 'react';
 
 export default function InboxPage() {
+  // カスタムフックでレビューデータを取得
+  const { reviews, loading, error, refetch } = useReviews();
+  
+  // Zustandからフィルタ状態を取得
   const { statusFilter, ratingFilter, searchQuery } = useFilterStore();
 
-  const filteredReviews = useMemo(() => {
-    let filtered = [...mockReviews];
+  // サービス関数でフィルタリング
+  const filteredReviews = useMemo(
+    () => filterReviews(reviews, { statusFilter, ratingFilter, searchQuery, periodFilter: '30days' }),
+    [reviews, statusFilter, ratingFilter, searchQuery]
+  );
 
-    // ステータスフィルタ
-    if (statusFilter === 'unreplied') {
-      filtered = filtered.filter(r => r.status === 'unreplied');
-    } else if (statusFilter === 'replied') {
-      filtered = filtered.filter(r => r.status === 'replied' || r.status === 'auto_replied');
-    }
+  // 統計情報を計算
+  const unrepliedCount = useMemo(() => countUnrepliedReviews(reviews), [reviews]);
+  const actionRequiredCount = useMemo(() => countHighRiskUnrepliedReviews(reviews), [reviews]);
+  const respondedCount = useMemo(
+    () => reviews.filter(r => r.status === 'replied' || r.status === 'auto_replied').length,
+    [reviews]
+  );
 
-    // 評価フィルタ
-    if (ratingFilter === 'negative') {
-      filtered = filtered.filter(r => r.rating <= 3);
-    }
+  // ローディング状態
+  if (loading) {
+    return <LoadingSpinner text="レビューを読み込んでいます..." />;
+  }
 
-    // 検索クエリ
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        r =>
-          r.text.toLowerCase().includes(query) ||
-          r.authorName.toLowerCase().includes(query)
-      );
-    }
-
-    return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [statusFilter, ratingFilter, searchQuery]);
-
-  const unrepliedCount = getUnrepliedReviews().length;
-  const actionRequiredCount = mockReviews.filter(r => r.status === 'unreplied' && r.risk === 'high').length;
-  const respondedCount = mockReviews.filter(r => r.status === 'replied' || r.status === 'auto_replied').length;
+  // エラー状態
+  if (error) {
+    return <ErrorMessage error={error} onRetry={refetch} />;
+  }
 
   return (
     <div className="space-y-6">

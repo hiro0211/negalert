@@ -10,13 +10,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mockTodos } from '@/lib/mock/todos';
+import { LoadingSpinner } from '@/components/common/loading-spinner';
+import { ErrorMessage } from '@/components/common/error-message';
+import { useTodos } from '@/lib/hooks/useTodos';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { Plus, Trash2 } from 'lucide-react';
 
 export default function TodosPage() {
-  const [todos, setTodos] = useState(mockTodos);
+  // カスタムフックでTODOデータを取得・操作
+  const { todos, loading, error, refetch, toggleComplete, remove } = useTodos();
+  
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -26,12 +30,26 @@ export default function TodosPage() {
     return true;
   });
 
-  const handleToggleComplete = (id: string) => {
-    setTodos(todos.map((todo) => (todo.id === id ? { ...todo, completed: !todo.completed } : todo)));
+  const handleToggleComplete = async (id: string) => {
+    try {
+      await toggleComplete(id);
+    } catch (err) {
+      console.error('TODO完了状態の変更に失敗:', err);
+      alert('TODO完了状態の変更に失敗しました');
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
+  const handleDelete = async (id: string) => {
+    if (!confirm('このTODOを削除してもよろしいですか?')) {
+      return;
+    }
+    
+    try {
+      await remove(id);
+    } catch (err) {
+      console.error('TODO削除に失敗:', err);
+      alert('TODO削除に失敗しました');
+    }
   };
 
   const priorityConfig = {
@@ -39,6 +57,16 @@ export default function TodosPage() {
     medium: { label: '中', color: 'bg-yellow-100 text-yellow-800' },
     low: { label: '低', color: 'bg-green-100 text-green-800' },
   };
+
+  // ローディング状態
+  if (loading) {
+    return <LoadingSpinner text="TODOを読み込んでいます..." />;
+  }
+
+  // エラー状態
+  if (error) {
+    return <ErrorMessage error={error} onRetry={refetch} />;
+  }
 
   return (
     <div className="space-y-6">

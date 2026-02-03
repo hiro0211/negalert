@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { InlineLoadingSpinner } from '@/components/common/loading-spinner';
 import { Copy, Save, Send, Sparkles } from 'lucide-react';
 import { Review } from '@/lib/types';
+import { saveReplyDraft, updateReviewReply } from '@/lib/api/reviews';
 
 interface ReplyEditorProps {
   review: Review;
@@ -21,6 +23,8 @@ const toneSamples = {
 export function ReplyEditor({ review }: ReplyEditorProps) {
   const [replyText, setReplyText] = useState(review.replyDraft || review.reply || '');
   const [selectedTone, setSelectedTone] = useState<keyof typeof toneSamples>('polite');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
   const handleCopy = () => {
@@ -28,14 +32,44 @@ export function ReplyEditor({ review }: ReplyEditorProps) {
     alert('返信案をコピーしました');
   };
 
-  const handleSave = () => {
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2000);
-    alert('下書きを保存しました');
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      // API層を経由して下書きを保存
+      await saveReplyDraft(review.id, replyText);
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 2000);
+    } catch (error) {
+      console.error('下書き保存エラー:', error);
+      alert('下書きの保存に失敗しました');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handlePublish = () => {
-    alert('返信を公開しました（モック）');
+  const handlePublish = async () => {
+    if (!replyText.trim()) {
+      alert('返信内容を入力してください');
+      return;
+    }
+
+    if (!confirm('この返信を公開してもよろしいですか?')) {
+      return;
+    }
+
+    try {
+      setIsPublishing(true);
+      // API層を経由して返信を投稿
+      await updateReviewReply(review.id, replyText);
+      alert('返信を公開しました');
+      // ページをリロードして最新の状態を反映
+      window.location.reload();
+    } catch (error) {
+      console.error('返信公開エラー:', error);
+      alert('返信の公開に失敗しました');
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   const handleToneChange = (tone: keyof typeof toneSamples) => {
@@ -83,20 +117,53 @@ export function ReplyEditor({ review }: ReplyEditorProps) {
           onChange={(e) => setReplyText(e.target.value)}
           placeholder="返信を入力してください..."
           className="min-h-[200px]"
+          disabled={isPublishing}
         />
 
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleCopy} className="flex-1">
+          <Button
+            variant="outline"
+            onClick={handleCopy}
+            className="flex-1"
+            disabled={isSaving || isPublishing}
+          >
             <Copy className="mr-2 h-4 w-4" />
             コピー
           </Button>
-          <Button variant="outline" onClick={handleSave} className="flex-1">
-            <Save className="mr-2 h-4 w-4" />
-            {isSaved ? '保存済み' : '下書き保存'}
+          <Button
+            variant="outline"
+            onClick={handleSave}
+            className="flex-1"
+            disabled={isSaving || isPublishing}
+          >
+            {isSaving ? (
+              <>
+                <InlineLoadingSpinner className="mr-2" />
+                保存中...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                {isSaved ? '保存済み' : '下書き保存'}
+              </>
+            )}
           </Button>
-          <Button onClick={handlePublish} className="flex-1">
-            <Send className="mr-2 h-4 w-4" />
-            公開
+          <Button
+            onClick={handlePublish}
+            className="flex-1"
+            disabled={isSaving || isPublishing}
+          >
+            {isPublishing ? (
+              <>
+                <InlineLoadingSpinner className="mr-2" />
+                公開中...
+              </>
+            ) : (
+              <>
+                <Send className="mr-2 h-4 w-4" />
+                公開
+              </>
+            )}
           </Button>
         </div>
       </CardContent>
