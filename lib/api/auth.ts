@@ -9,6 +9,7 @@ import { createClient } from '../supabase/client';
 /**
  * Google OAuthフロー開始
  * Supabase AuthのGoogle OAuthを使用
+ * ビジネスプロフィールの管理権限とユーザー情報を要求
  * 
  * @returns 認証URL
  */
@@ -18,11 +19,12 @@ export async function initiateGoogleOAuth(): Promise<{ authUrl: string }> {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback`,
-      scopes: 'https://www.googleapis.com/auth/business.manage',
+      redirectTo: `${typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback`,
       queryParams: {
-        access_type: 'offline',
-        prompt: 'consent',
+        access_type: 'offline', // これがないとRefresh Tokenが貰えない（重要）
+        prompt: 'consent',      // 毎回同意画面を出して確実にTokenを貰う
+        // 必要な権限: ビジネス管理 + 基本情報
+        scope: 'https://www.googleapis.com/auth/business.manage https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
       },
     },
   });
