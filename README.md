@@ -1,6 +1,6 @@
 # NegAlert - Googleレビュー特化SaaS MVP
 
-NegAlertは、Googleレビューに特化したレビュー管理SaaSのMVP（最小実行可能製品）です。BrightLocal、Reputation.com、Birdeyeなど、既に売れているレビュー管理SaaSのUIパターンを徹底的に模倣し、特に「Review Inbox（受信箱）中心の運用UI」を最優先で実装しています。
+NegAlertは、Googleレビューに特化したレビュー管理SaaSのMVPです。特に「Review Inbox（受信箱）中心の運用UI」を最優先で実装しています。
 
 ## 🎯 プロジェクト概要
 
