@@ -3,6 +3,7 @@ import { StarRating } from '@/components/common/star-rating';
 import { Review } from '@/lib/types';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
+import { Store } from 'lucide-react';
 
 interface ReviewDetailProps {
   review: Review;
@@ -56,6 +57,30 @@ export function ReviewDetail({ review }: ReviewDetailProps) {
                   <img src={photo} alt={`Photo ${index + 1}`} className="h-full w-full object-cover" />
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* 返信表示 */}
+          {review.reply && (
+            <div className="border-t pt-4">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <Store className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-semibold text-sm">店舗からの返信</span>
+                    {review.replyCreatedAt && (
+                      <span className="text-xs text-gray-500">
+                        {format(new Date(review.replyCreatedAt), 'yyyy年M月d日', { locale: ja })}
+                      </span>
+                    )}
+                  </div>
+                  <div className="rounded-lg bg-blue-50 p-3">
+                    <p className="text-sm leading-relaxed">{review.reply}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>

@@ -159,3 +159,24 @@ export type SyncReviewsResponse = {
   syncedWorkspaces: number;
   error?: string;
 };
+
+// =====================================
+// レビュー返信関連型
+// =====================================
+
+/**
+ * レビュー返信APIのレスポンス型
+ */
+export type ReplyToReviewResponse = {
+  success: boolean;
+  review?: any; // 更新後のレビュー情報
+  error?: string;
+};
+
+/**
+ * 返信削除APIのレスポンス型
+ */
+export type DeleteReplyResponse = {
+  success: boolean;
+  error?: string;
+};

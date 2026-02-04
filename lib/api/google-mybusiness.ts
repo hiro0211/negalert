@@ -218,9 +218,9 @@ export async function fetchGoogleReviews(
 }
 
 /**
- * レビューに返信を投稿
+ * レビューに返信を投稿・更新
  * 
- * @param reviewId - レビューID
+ * @param reviewId - レビューID（例: accounts/123/locations/456/reviews/789）
  * @param replyText - 返信テキスト
  * @param accessToken - Google OAuthアクセストークン
  */
@@ -229,122 +229,77 @@ export async function replyToGoogleReview(
   replyText: string,
   accessToken: string
 ): Promise<void> {
-  // 現在: モック実装（何もしない）
-  // 将来: GMB API で返信投稿
+  // Google My Business API v4 のレビュー返信エンドポイント
+  const url = `https://mybusiness.googleapis.com/v4/${reviewId}/reply`;
   
-  console.log('[Mock] Googleレビューに返信:', {
-    reviewId,
-    replyText,
-    accessToken,
+  console.log('💬 Googleレビューに返信投稿:', { reviewId });
+  
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      comment: replyText,
+    } as GoogleReviewReplyInput),
   });
   
-  // 本番実装例（コメントアウト）
-  /*
-  const response = await fetch(
-    `${GMB_API_BASE}/${reviewId}/reply`,
-    {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        comment: replyText,
-      } as GoogleReviewReplyInput),
-    }
-  );
-  
   if (!response.ok) {
-    throw new Error('返信投稿に失敗しました');
-  }
-  */
-  
-  // モック: 成功として扱う
-  await new Promise(resolve => setTimeout(resolve, 500)); // 遅延をシミュレート
-}
-
-/**
- * レビューの返信を更新
- * 
- * @param reviewId - レビューID
- * @param replyText - 更新後の返信テキスト
- * @param accessToken - Google OAuthアクセストークン
- */
-export async function updateGoogleReviewReply(
-  reviewId: string,
-  replyText: string,
-  accessToken: string
-): Promise<void> {
-  // 現在: モック実装（何もしない）
-  // 将来: GMB API で返信更新
-  
-  console.log('[Mock] Googleレビュー返信を更新:', {
-    reviewId,
-    replyText,
-    accessToken,
-  });
-  
-  // 本番実装例（コメントアウト）
-  /*
-  const response = await fetch(
-    `${GMB_API_BASE}/${reviewId}/reply`,
-    {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        comment: replyText,
-      } as GoogleReviewReplyInput),
+    const errorData = await response.json().catch(() => ({}));
+    console.error('返信投稿エラー:', errorData);
+    
+    if (response.status === 401) {
+      throw new Error('認証エラー: アクセストークンが無効です');
+    } else if (response.status === 403) {
+      throw new Error('権限エラー: レビューへの返信権限がありません');
+    } else if (response.status === 404) {
+      throw new Error('レビューが見つかりません');
     }
-  );
-  
-  if (!response.ok) {
-    throw new Error('返信更新に失敗しました');
+    
+    throw new Error(`返信投稿に失敗しました: ${response.status}`);
   }
-  */
   
-  // モック: 成功として扱う
-  await new Promise(resolve => setTimeout(resolve, 500));
+  console.log('✅ 返信投稿成功');
 }
 
 /**
  * レビューの返信を削除
  * 
- * @param reviewId - レビューID
+ * @param reviewId - レビューID（例: accounts/123/locations/456/reviews/789）
  * @param accessToken - Google OAuthアクセストークン
  */
 export async function deleteGoogleReviewReply(
   reviewId: string,
   accessToken: string
 ): Promise<void> {
-  // 現在: モック実装（何もしない）
-  // 将来: GMB API で返信削除
+  // Google My Business API v4 のレビュー返信削除エンドポイント
+  const url = `https://mybusiness.googleapis.com/v4/${reviewId}/reply`;
   
-  console.log('[Mock] Googleレビュー返信を削除:', {
-    reviewId,
-    accessToken,
+  console.log('🗑️ Googleレビュー返信を削除:', { reviewId });
+  
+  const response = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
   });
   
-  // 本番実装例（コメントアウト）
-  /*
-  const response = await fetch(
-    `${GMB_API_BASE}/${reviewId}/reply`,
-    {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    }
-  );
-  
   if (!response.ok) {
-    throw new Error('返信削除に失敗しました');
+    const errorData = await response.json().catch(() => ({}));
+    console.error('返信削除エラー:', errorData);
+    
+    if (response.status === 401) {
+      throw new Error('認証エラー: アクセストークンが無効です');
+    } else if (response.status === 403) {
+      throw new Error('権限エラー: レビューへの返信削除権限がありません');
+    } else if (response.status === 404) {
+      throw new Error('レビューまたは返信が見つかりません');
+    }
+    
+    throw new Error(`返信削除に失敗しました: ${response.status}`);
   }
-  */
   
-  // モック: 成功として扱う
-  await new Promise(resolve => setTimeout(resolve, 500));
+  console.log('✅ 返信削除成功');
 }

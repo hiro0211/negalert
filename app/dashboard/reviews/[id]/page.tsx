@@ -16,6 +16,12 @@ export default function ReviewDetailPage({ params }: { params: { id: string } })
   // カスタムフックでレビューデータを取得
   const { review, loading, error, refetch } = useReview(params.id);
 
+  // 返信更新後のコールバック
+  const handleReplyUpdated = () => {
+    // レビューデータを再取得
+    refetch();
+  };
+
   // ローディング状態
   if (loading) {
     return <LoadingSpinner text="レビューを読み込んでいます..." />;
@@ -72,7 +78,7 @@ export default function ReviewDetailPage({ params }: { params: { id: string } })
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           <ReviewDetail review={review} />
-          <ReplyEditor review={review} />
+          <ReplyEditor review={review} onReplyUpdated={handleReplyUpdated} />
         </div>
 
         <div className="space-y-6">

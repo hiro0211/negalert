@@ -151,7 +151,8 @@ export async function fetchHighRiskReviews(): Promise<Review[]> {
 }
 
 /**
- * レビューに返信を投稿
+ * レビューに返信を投稿・更新
+ * Phase 4のAPIエンドポイントを使用
  * 
  * @param id - レビューID
  * @param reply - 返信テキスト
@@ -160,35 +161,35 @@ export async function updateReviewReply(
   id: string,
   reply: string
 ): Promise<void> {
-  // 現在: モック実装（何もしない）
-  // 将来: Google My Business APIに返信投稿 + Supabaseを更新
-  
-  console.log('[Mock] レビューに返信:', { id, reply });
-  
-  // 本番実装例（コメントアウト）
-  /*
-  const session = await getSession();
-  if (!session) {
-    throw new Error('認証が必要です');
+  const response = await fetch(`/api/reviews/${id}/reply`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ replyText: reply }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: '返信の投稿に失敗しました' }));
+    throw new Error(error.error || '返信の投稿に失敗しました');
   }
-  
-  // GMB APIに返信投稿
-  await replyToGoogleReview(id, reply, session.accessToken);
-  
-  // Supabaseを更新
-  const { error } = await supabase
-    .from('reviews')
-    .update({
-      reply,
-      status: 'replied',
-      updatedAt: new Date().toISOString(),
-    })
-    .eq('id', id);
-  
-  if (error) throw error;
-  */
-  
-  await new Promise(resolve => setTimeout(resolve, 500));
+}
+
+/**
+ * レビューの返信を削除
+ * Phase 4のAPIエンドポイントを使用
+ * 
+ * @param id - レビューID
+ */
+export async function deleteReviewReply(id: string): Promise<void> {
+  const response = await fetch(`/api/reviews/${id}/reply`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: '返信の削除に失敗しました' }));
+    throw new Error(error.error || '返信の削除に失敗しました');
+  }
 }
 
 /**

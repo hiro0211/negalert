@@ -11,6 +11,7 @@ export type Review = {
   aiCategories: string[];
   aiRiskReason: string;
   reply?: string;
+  replyCreatedAt?: Date;
   replyDraft?: string;
   photos?: string[];
 };
