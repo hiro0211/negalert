@@ -6,7 +6,7 @@ export type Review = {
   authorName: string;
   text: string;
   status: 'unreplied' | 'replied' | 'auto_replied';
-  risk: 'high' | 'medium' | 'low';
+  risk: 'high' | 'medium' | 'low' | null;
   aiSummary: string | null;
   aiCategories: string[] | null;
   aiRiskReason: string | null;

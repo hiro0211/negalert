@@ -1,9 +1,9 @@
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, AlertTriangle, CheckCircle } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface RiskBadgeProps {
-  risk: 'high' | 'medium' | 'low';
+  risk: 'high' | 'medium' | 'low' | null;
   showIcon?: boolean;
 }
 
@@ -24,9 +24,15 @@ export function RiskBadge({ risk, showIcon = true }: RiskBadgeProps) {
       icon: CheckCircle,
       className: 'bg-green-100 text-green-800 border-green-300',
     },
+    null: {
+      label: '未分析',
+      icon: HelpCircle,
+      className: 'bg-gray-100 text-gray-800 border-gray-300',
+    },
   };
 
-  const { label, icon: Icon, className } = config[risk];
+  const riskKey = risk || 'null';
+  const { label, icon: Icon, className } = config[riskKey];
 
   return (
     <Badge variant="outline" className={cn(className, 'font-medium')}>
