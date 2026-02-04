@@ -114,13 +114,6 @@ export async function exchangeCodeForTokens(
 export async function refreshAccessToken(
   refreshToken: string
 ): Promise<{ accessToken: string; expiresIn: number }> {
-  // 現在: モック実装
-  // 将来: Google Token Endpointでトークンをリフレッシュ
-  
-  console.log('[Mock] アクセストークンをリフレッシュ:', refreshToken);
-  
-  // 本番実装例（コメントアウト）
-  /*
   const response = await fetch(GOOGLE_TOKEN_ENDPOINT, {
     method: 'POST',
     headers: {
@@ -135,7 +128,9 @@ export async function refreshAccessToken(
   });
   
   if (!response.ok) {
-    throw new Error('トークンのリフレッシュに失敗しました');
+    const errorData = await response.json().catch(() => ({}));
+    console.error('トークンリフレッシュエラー:', errorData);
+    throw new Error(`トークンのリフレッシュに失敗しました: ${response.status}`);
   }
   
   const data = await response.json();
@@ -143,13 +138,6 @@ export async function refreshAccessToken(
   return {
     accessToken: data.access_token,
     expiresIn: data.expires_in,
-  };
-  */
-  
-  // モック: 新しいダミートークンを返す
-  return {
-    accessToken: 'mock-refreshed-access-token-' + Date.now(),
-    expiresIn: 3600,
   };
 }
 

@@ -128,3 +128,23 @@ export function convertNumberToGoogleRating(rating: 1 | 2 | 3 | 4 | 5): GoogleRe
   };
   return ratingMap[rating];
 }
+
+// =====================================
+// Workspace関連型
+// =====================================
+
+export type Workspace = {
+  id: string;
+  user_id: string;
+  google_location_id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SyncLocationsResponse = {
+  success: boolean;
+  locations: GoogleLocation[];
+  syncedCount: number;
+  error?: string;
+};

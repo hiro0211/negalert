@@ -142,3 +142,67 @@ export async function deleteGoogleToken(
   
   console.log('✅ Google OAuth Token削除成功:', userId);
 }
+
+/**
+ * 有効なGoogle OAuthアクセストークンを取得
+ * トークンが期限切れの場合は自動的にリフレッシュ
+ * 
+ * @param userId - ユーザーID
+ * @param supabase - Supabaseクライアント（オプション、指定しない場合は新規作成）
+ * @returns 有効なアクセストークン
+ */
+export async function getValidAccessToken(
+  userId: string,
+  supabase?: SupabaseClient
+): Promise<string> {
+  const client = supabase || await createServerClient();
+  
+  // トークンを取得
+  const token = await getGoogleToken(userId, client);
+  
+  if (!token) {
+    throw new Error('認証トークンが見つかりません。再度ログインしてください。');
+  }
+  
+  // 有効期限をチェック（5分のバッファを持たせる）
+  const bufferTime = 5 * 60 * 1000; // 5分
+  const expiresAt = token.expires_at ? new Date(token.expires_at).getTime() : 0;
+  const isValid = Date.now() < expiresAt - bufferTime;
+  
+  // トークンが有効ならそのまま返す
+  if (isValid && token.access_token) {
+    console.log('✅ 有効なアクセストークンを使用します');
+    return token.access_token;
+  }
+  
+  // トークンが期限切れの場合、リフレッシュトークンで更新
+  if (!token.refresh_token) {
+    throw new Error('リフレッシュトークンが見つかりません。再度ログインしてください。');
+  }
+  
+  console.log('⚠️ アクセストークンが期限切れです。リフレッシュします...');
+  
+  try {
+    // リフレッシュトークンでアクセストークンを更新
+    const { refreshAccessToken } = await import('./google-oauth');
+    const refreshResult = await refreshAccessToken(token.refresh_token);
+    
+    // 新しいトークンをDBに保存
+    const newExpiresAt = Math.floor(Date.now() / 1000) + refreshResult.expiresIn;
+    
+    await saveGoogleToken({
+      supabase: client,
+      userId,
+      accessToken: refreshResult.accessToken,
+      refreshToken: token.refresh_token, // リフレッシュトークンは保持
+      expiresAt: newExpiresAt,
+    });
+    
+    console.log('✅ アクセストークンをリフレッシュしました');
+    
+    return refreshResult.accessToken;
+  } catch (error) {
+    console.error('トークンリフレッシュエラー:', error);
+    throw new Error('アクセストークンの更新に失敗しました。再度ログインしてください。');
+  }
+}

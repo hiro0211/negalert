@@ -5,26 +5,18 @@
 
 import { GoogleLocation, GoogleReview, GoogleReviewReplyInput } from './types';
 
-// Google My Business API エンドポイント
-const GMB_API_BASE = 'https://mybusiness.googleapis.com/v4';
+// Google Business Profile API エンドポイント
+const GMB_API_BASE = 'https://mybusinessbusinessinformation.googleapis.com/v1';
+const GMB_ACCOUNT_API_BASE = 'https://mybusinessaccountmanagement.googleapis.com/v1';
 
 /**
- * ロケーション一覧を取得
+ * Google Business ProfileのアカウントIDを取得
  * 
  * @param accessToken - Google OAuthアクセストークン
- * @returns ロケーション一覧
+ * @returns アカウントID（例: "accounts/123456789"）
  */
-export async function fetchGoogleLocations(
-  accessToken: string
-): Promise<GoogleLocation[]> {
-  // 現在: モック実装
-  // 将来: GMB API /accounts/{accountId}/locations を呼び出し
-  
-  console.log('[Mock] Googleロケーション取得:', { accessToken });
-  
-  // 本番実装例（コメントアウト）
-  /*
-  const response = await fetch(`${GMB_API_BASE}/accounts/{accountId}/locations`, {
+export async function getAccountId(accessToken: string): Promise<string> {
+  const response = await fetch(`${GMB_ACCOUNT_API_BASE}/accounts`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
@@ -32,28 +24,127 @@ export async function fetchGoogleLocations(
   });
   
   if (!response.ok) {
-    throw new Error('ロケーション取得に失敗しました');
+    const errorData = await response.json().catch(() => ({}));
+    console.error('アカウントID取得エラー:', errorData);
+    
+    if (response.status === 401) {
+      throw new Error('認証エラー: アクセストークンが無効です');
+    } else if (response.status === 403) {
+      throw new Error('権限エラー: Google Business Profileへのアクセス権限がありません');
+    }
+    
+    throw new Error(`アカウントID取得に失敗しました: ${response.status}`);
   }
   
   const data = await response.json();
   
-  return data.locations.map((loc: any) => ({
-    name: loc.locationName,
-    locationId: loc.name,
-    address: loc.address.addressLines.join(', '),
+  if (!data.accounts || data.accounts.length === 0) {
+    throw new Error('Google Business Profileアカウントが見つかりません');
+  }
+  
+  // 最初のアカウントのIDを返す
+  const accountId = data.accounts[0].name; // "accounts/123456789" 形式
+  console.log('✅ アカウントID取得成功:', accountId);
+  
+  return accountId;
+}
+
+/**
+ * 店舗一覧を取得
+ * 
+ * @param accessToken - Google OAuthアクセストークン
+ * @returns ロケーション一覧
+ */
+export async function listLocations(
+  accessToken: string
+): Promise<GoogleLocation[]> {
+  // アカウントIDを取得
+  const accountId = await getAccountId(accessToken);
+  
+  // ロケーション一覧を取得
+  const readMask = 'name,title,storefrontAddress,metadata';
+  const url = `${GMB_API_BASE}/${accountId}/locations?readMask=${readMask}`;
+  
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    console.error('ロケーション取得エラー:', errorData);
+    
+    if (response.status === 401) {
+      throw new Error('認証エラー: アクセストークンが無効です');
+    } else if (response.status === 403) {
+      throw new Error('権限エラー: ロケーションへのアクセス権限がありません');
+    }
+    
+    throw new Error(`ロケーション取得に失敗しました: ${response.status}`);
+  }
+  
+  const data = await response.json();
+  
+  if (!data.locations || data.locations.length === 0) {
+    console.log('⚠️ ロケーションが見つかりませんでした');
+    return [];
+  }
+  
+  // レスポンスをGoogleLocation型に変換
+  const locations: GoogleLocation[] = data.locations.map((loc: any) => ({
+    name: loc.title || loc.name || '店舗名なし',
+    locationId: loc.name, // "accounts/123/locations/456" 形式
+    address: formatAddress(loc.storefrontAddress),
     placeId: loc.metadata?.placeId,
   }));
-  */
   
-  // モック: ダミーロケーションを返す
-  return [
-    {
-      name: 'サンプルレストラン 渋谷店',
-      locationId: 'accounts/123/locations/456',
-      address: '東京都渋谷区渋谷1-1-1',
-      placeId: 'ChIJN1t_tDeuEmsRUsoyG83frY4',
-    },
-  ];
+  console.log(`✅ ロケーション取得成功: ${locations.length}件`);
+  
+  return locations;
+}
+
+/**
+ * 住所オブジェクトを文字列にフォーマット
+ * 
+ * @param address - Google Business Profileの住所オブジェクト
+ * @returns フォーマットされた住所文字列
+ */
+function formatAddress(address: any): string {
+  if (!address) {
+    return '';
+  }
+  
+  const parts: string[] = [];
+  
+  if (address.addressLines) {
+    parts.push(...address.addressLines);
+  }
+  
+  if (address.locality) {
+    parts.push(address.locality);
+  }
+  
+  if (address.administrativeArea) {
+    parts.push(address.administrativeArea);
+  }
+  
+  if (address.postalCode) {
+    parts.push(address.postalCode);
+  }
+  
+  return parts.filter(Boolean).join(', ');
+}
+
+/**
+ * @deprecated この関数は廃止されました。listLocations() を使用してください。
+ */
+export async function fetchGoogleLocations(
+  accessToken: string
+): Promise<GoogleLocation[]> {
+  console.warn('⚠️ fetchGoogleLocations() は廃止されました。listLocations() を使用してください。');
+  return listLocations(accessToken);
 }
 
 /**
