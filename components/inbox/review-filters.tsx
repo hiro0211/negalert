@@ -20,10 +20,10 @@ export function ReviewFilters({ unrepliedCount, actionRequiredCount, respondedCo
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[140px] text-gray-700">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white text-gray-700">
             <SelectItem value="all">すべて</SelectItem>
             <SelectItem value="unreplied">未返信のみ</SelectItem>
             <SelectItem value="replied">返信済のみ</SelectItem>
@@ -38,13 +38,13 @@ export function ReviewFilters({ unrepliedCount, actionRequiredCount, respondedCo
         </Button>
 
         <Select value={periodFilter} onValueChange={setPeriodFilter}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[140px] text-gray-700">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="7days">直近7日</SelectItem>
-            <SelectItem value="30days">直近30日</SelectItem>
-            <SelectItem value="custom">カスタム</SelectItem>
+          <SelectContent className="bg-white">
+            <SelectItem value="7days" className="text-gray-700">直近7日</SelectItem>
+            <SelectItem value="30days" className="text-gray-700">直近30日</SelectItem>
+            <SelectItem value="custom" className="text-gray-700">カスタム</SelectItem>
           </SelectContent>
         </Select>
 

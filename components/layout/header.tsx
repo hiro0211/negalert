@@ -27,16 +27,16 @@ export function Header() {
   return (
     <header className="flex h-16 items-center justify-between border-b bg-white px-6">
       <div className="flex items-center gap-4">
-        <Select defaultValue="loc1">
+        {/* <Select defaultValue="loc1">
           <SelectTrigger className="w-[280px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="loc1">{user?.location.name || 'ロケーション'}</SelectItem>
           </SelectContent>
-        </Select>
+        </Select> */}
 
-        <Select defaultValue="30days">
+        {/* <Select defaultValue="30days">
           <SelectTrigger className="w-[140px]">
             <SelectValue />
           </SelectTrigger>
@@ -45,20 +45,20 @@ export function Header() {
             <SelectItem value="30days">直近30日</SelectItem>
             <SelectItem value="custom">カスタム</SelectItem>
           </SelectContent>
-        </Select>
+        </Select> */}
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="relative">
+        {/* <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <Input
             placeholder="検索..."
             className="w-[200px] pl-9"
           />
-        </div>
+        </div> */}
         <div className="flex items-center gap-2">
           <div className="text-right">
-            <div className="text-sm font-medium">{user?.name || 'ユーザー'}</div>
+            <div className="text-sm font-medium text-gray-600">{user?.name || 'ユーザー'}</div>
             <div className="text-xs text-gray-600">{user?.email || ''}</div>
           </div>
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white">
@@ -69,7 +69,7 @@ export function Header() {
             size="sm"
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="ml-2"
+            className="ml-2 text-gray-600"
           >
             <LogOut className="h-4 w-4" />
           </Button>

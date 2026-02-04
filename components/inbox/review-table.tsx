@@ -29,13 +29,13 @@ export function ReviewTable({ reviews }: ReviewTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[120px]">日付</TableHead>
-              <TableHead className="w-[100px]">ソース</TableHead>
-              <TableHead className="w-[140px]">評価</TableHead>
-              <TableHead>レビュー</TableHead>
-              <TableHead className="w-[120px]">ステータス</TableHead>
-              <TableHead className="w-[100px]">リスク</TableHead>
-              <TableHead className="w-[100px] text-right">アクション</TableHead>
+              <TableHead className="w-[120px] text-gray-700">日付</TableHead>
+              <TableHead className="w-[100px] text-gray-700">ソース</TableHead>
+              <TableHead className="w-[140px] text-gray-700">評価</TableHead>
+              <TableHead className="text-gray-700">レビュー</TableHead>
+              <TableHead className="w-[120px] text-gray-700">ステータス</TableHead>
+              <TableHead className="w-[100px] text-gray-700">リスク</TableHead>
+              <TableHead className="w-[100px] text-gray-700">アクション</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
