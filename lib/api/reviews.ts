@@ -6,6 +6,13 @@
 import { Review } from '../types';
 import { UpdateReviewInput } from './types';
 import { createClient } from '../supabase/client';
+import { mockReviews, getReviewById as getMockReviewById } from '../mock/reviews';
+
+/**
+ * モックデータモードかどうかを判定
+ * 環境変数 USE_MOCK_DATA=true で有効化
+ */
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
 /**
  * データベースのレビューレコードをフロントエンド型に変換
@@ -51,6 +58,12 @@ function convertDbReviewToReview(dbReview: any): Review {
  * @returns レビュー一覧
  */
 export async function fetchReviews(): Promise<Review[]> {
+  // モックデータモードの場合はモックデータを返す
+  if (USE_MOCK_DATA) {
+    console.log('🎭 [MOCK MODE] モックデータを使用しています');
+    return Promise.resolve([...mockReviews]);
+  }
+
   const supabase = createClient();
   
   // Supabaseからレビューを取得（RLSで自動的にworkspace_idでフィルタリング）
@@ -75,6 +88,13 @@ export async function fetchReviews(): Promise<Review[]> {
  * @returns レビュー（見つからない場合はnull）
  */
 export async function fetchReviewById(id: string): Promise<Review | null> {
+  // モックデータモードの場合はモックデータから検索
+  if (USE_MOCK_DATA) {
+    console.log('🎭 [MOCK MODE] モックデータからレビューを検索:', id);
+    const review = getMockReviewById(id);
+    return Promise.resolve(review || null);
+  }
+
   const supabase = createClient();
   
   const { data, error } = await supabase
@@ -100,6 +120,12 @@ export async function fetchReviewById(id: string): Promise<Review | null> {
  * @returns 未返信レビュー一覧
  */
 export async function fetchUnrepliedReviews(): Promise<Review[]> {
+  // モックデータモードの場合はフィルタリングして返す
+  if (USE_MOCK_DATA) {
+    console.log('🎭 [MOCK MODE] 未返信レビューをフィルタリング');
+    return Promise.resolve(mockReviews.filter(r => r.status === 'unreplied'));
+  }
+
   const supabase = createClient();
   
   const { data, error } = await supabase
@@ -122,6 +148,12 @@ export async function fetchUnrepliedReviews(): Promise<Review[]> {
  * @returns ネガティブレビュー一覧
  */
 export async function fetchNegativeReviews(): Promise<Review[]> {
+  // モックデータモードの場合はフィルタリングして返す
+  if (USE_MOCK_DATA) {
+    console.log('🎭 [MOCK MODE] ネガティブレビューをフィルタリング');
+    return Promise.resolve(mockReviews.filter(r => r.rating <= 3));
+  }
+
   const supabase = createClient();
   
   const { data, error } = await supabase
@@ -144,6 +176,12 @@ export async function fetchNegativeReviews(): Promise<Review[]> {
  * @returns 高リスクレビュー一覧
  */
 export async function fetchHighRiskReviews(): Promise<Review[]> {
+  // モックデータモードの場合はフィルタリングして返す
+  if (USE_MOCK_DATA) {
+    console.log('🎭 [MOCK MODE] 高リスクレビューをフィルタリング');
+    return Promise.resolve(mockReviews.filter(r => r.risk === 'high'));
+  }
+
   const supabase = createClient();
   
   // 注意: risk列がDBに存在しない場合は、評価とステータスでフィルタリング

@@ -47,31 +47,40 @@ export function ReviewSlideOver({ review, open, onOpenChange }: ReviewSlideOverP
             <p className="text-sm leading-relaxed">{review.text}</p>
           </div>
 
-          <div className="space-y-3">
-            <h3 className="font-semibold">AI分析</h3>
-            <div className="rounded-lg border bg-blue-50 p-4">
-              <div className="text-sm">
-                <div className="font-medium text-blue-900">要約</div>
-                <p className="mt-1 text-blue-800">{review.aiSummary}</p>
-              </div>
-            </div>
+          {(review.aiSummary || review.aiCategories || review.aiRiskReason) && (
+            <div className="space-y-3">
+              <h3 className="font-semibold">AI分析</h3>
+              
+              {review.aiSummary && (
+                <div className="rounded-lg border bg-blue-50 p-4">
+                  <div className="text-sm">
+                    <div className="font-medium text-blue-900">要約</div>
+                    <p className="mt-1 text-blue-800">{review.aiSummary}</p>
+                  </div>
+                </div>
+              )}
 
-            <div>
-              <div className="text-sm font-medium mb-2">カテゴリ</div>
-              <div className="flex flex-wrap gap-2">
-                {review.aiCategories.map((category, index) => (
-                  <Badge key={index} variant="outline">
-                    {category}
-                  </Badge>
-                ))}
-              </div>
-            </div>
+              {review.aiCategories && review.aiCategories.length > 0 && (
+                <div>
+                  <div className="text-sm font-medium mb-2">カテゴリ</div>
+                  <div className="flex flex-wrap gap-2">
+                    {review.aiCategories.map((category, index) => (
+                      <Badge key={index} variant="outline">
+                        {category}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-            <div>
-              <div className="text-sm font-medium mb-2">リスク理由</div>
-              <p className="text-sm text-gray-700">{review.aiRiskReason}</p>
+              {review.aiRiskReason && (
+                <div>
+                  <div className="text-sm font-medium mb-2">リスク理由</div>
+                  <p className="text-sm text-gray-700">{review.aiRiskReason}</p>
+                </div>
+              )}
             </div>
-          </div>
+          )}
 
           {(review.replyDraft || review.reply) && (
             <div className="space-y-2">

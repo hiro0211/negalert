@@ -73,11 +73,20 @@ export function useReview(id: string) {
     loadReview();
   }, [loadReview]);
 
+  // レビューデータを直接更新する関数（モックモード用）
+  const updateReview = useCallback((updatedData: Partial<Review>) => {
+    setReview(prev => {
+      if (!prev) return null;
+      return { ...prev, ...updatedData };
+    });
+  }, []);
+
   return {
     review,
     loading,
     error,
     refetch: loadReview,
+    updateReview, // 直接更新用の関数を追加
   };
 }
 

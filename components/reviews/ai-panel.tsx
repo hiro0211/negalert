@@ -10,7 +10,7 @@ import { Brain, Sparkles, AlertCircle } from 'lucide-react';
 
 interface AIPanelProps {
   review: Review;
-  onAnalysisComplete?: () => void; // 分析完了時のコールバック
+  onAnalysisComplete?: (updatedReview?: any) => void; // 分析完了時のコールバック（更新データを渡す）
 }
 
 export function AIPanel({ review, onAnalysisComplete }: AIPanelProps) {
@@ -35,9 +35,13 @@ export function AIPanel({ review, onAnalysisComplete }: AIPanelProps) {
         throw new Error(errorData.error || 'AI分析に失敗しました');
       }
       
-      // 成功時は親コンポーネントのrefetch()を呼び出す
+      // レスポンスデータを取得
+      const data = await response.json();
+      console.log('✅ AI分析レスポンス:', data);
+      
+      // 成功時は親コンポーネントに更新データを渡す
       if (onAnalysisComplete) {
-        onAnalysisComplete();
+        onAnalysisComplete(data);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'AI分析に失敗しました';
