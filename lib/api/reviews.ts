@@ -11,13 +11,17 @@ import { createClient } from '../supabase/client';
  * データベースのレビューレコードをフロントエンド型に変換
  */
 function convertDbReviewToReview(dbReview: any): Review {
-  // リスク判定ロジック: 1-2星かつ未返信 = high、3星かつ未返信 = medium、それ以外 = low
-  let risk: 'high' | 'medium' | 'low' = 'low';
-  if (dbReview.status === 'unreplied') {
-    if (dbReview.rating <= 2) {
-      risk = 'high';
-    } else if (dbReview.rating === 3) {
-      risk = 'medium';
+  // リスク判定: DBに保存されている値を優先、なければ自動計算
+  let risk: 'high' | 'medium' | 'low' = dbReview.risk || 'low';
+  
+  // AI分析未実行の場合は自動計算
+  if (!dbReview.risk) {
+    if (dbReview.status === 'unreplied') {
+      if (dbReview.rating <= 2) {
+        risk = 'high';
+      } else if (dbReview.rating === 3) {
+        risk = 'medium';
+      }
     }
   }
   
@@ -30,12 +34,13 @@ function convertDbReviewToReview(dbReview: any): Review {
     text: dbReview.comment || '',
     status: dbReview.status || 'unreplied',
     risk,
-    // AI分析機能は今後実装予定のため、暫定値を設定
-    aiSummary: '',
-    aiCategories: [],
-    aiRiskReason: '',
+    // AI分析データをDBから取得（AI分析未実行の場合はnull）
+    aiSummary: dbReview.ai_summary || null,
+    aiCategories: dbReview.ai_categories || null,
+    aiRiskReason: dbReview.ai_risk_reason || null,
     reply: dbReview.reply_text || undefined,
     replyCreatedAt: dbReview.reply_created_at ? new Date(dbReview.reply_created_at) : undefined,
+    replyDraft: dbReview.reply_draft || null,
     photos: [],
   };
 }

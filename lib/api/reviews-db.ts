@@ -129,3 +129,43 @@ export async function checkReviewAccess(
   // RLSで自動的にフィルタリングされるため、データが取得できればアクセス権限あり
   return true;
 }
+
+/**
+ * AI分析結果をDBに保存
+ * 
+ * @param reviewId - レビューID（UUID）
+ * @param analysisResult - AI分析結果
+ * @param supabase - Supabaseクライアント（必須）
+ */
+export async function updateReviewAnalysisInDb(
+  reviewId: string,
+  analysisResult: {
+    summary: string;
+    risk: 'high' | 'medium' | 'low';
+    categories: string[];
+    riskReason: string;
+    replyDraft: string;
+  },
+  supabase: SupabaseClient
+): Promise<void> {
+  console.log('💾 DB更新: AI分析結果を保存', { reviewId });
+  
+  const { error } = await supabase
+    .from('reviews')
+    .update({
+      ai_summary: analysisResult.summary,
+      risk: analysisResult.risk,
+      ai_categories: analysisResult.categories,
+      ai_risk_reason: analysisResult.riskReason,
+      reply_draft: analysisResult.replyDraft,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', reviewId);
+  
+  if (error) {
+    console.error('DB更新エラー:', error);
+    throw new Error(`DB更新に失敗しました: ${error.message}`);
+  }
+  
+  console.log('✅ DB更新成功: AI分析結果を保存');
+}

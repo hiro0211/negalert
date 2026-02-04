@@ -22,6 +22,12 @@ export default function ReviewDetailPage({ params }: { params: { id: string } })
     refetch();
   };
 
+  // AI分析完了後のコールバック
+  const handleAnalysisComplete = () => {
+    // レビューデータを再取得
+    refetch();
+  };
+
   // ローディング状態
   if (loading) {
     return <LoadingSpinner text="レビューを読み込んでいます..." />;
@@ -82,7 +88,7 @@ export default function ReviewDetailPage({ params }: { params: { id: string } })
         </div>
 
         <div className="space-y-6">
-          <AIPanel review={review} />
+          <AIPanel review={review} onAnalysisComplete={handleAnalysisComplete} />
           <TodoGenerator review={review} />
           <NotificationLog />
         </div>

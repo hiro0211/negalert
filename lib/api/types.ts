@@ -180,3 +180,28 @@ export type DeleteReplyResponse = {
   success: boolean;
   error?: string;
 };
+
+// =====================================
+// AI分析関連型
+// =====================================
+
+/**
+ * AI分析結果の型
+ */
+export interface AIAnalysisResult {
+  summary: string;           // 50文字以内の要約
+  risk: 'high' | 'medium' | 'low';
+  categories: string[];      // カテゴリ配列
+  riskReason: string;        // 30文字以内のリスク理由
+  replyDraft: string;        // 返信案
+}
+
+/**
+ * レビューAI分析APIのレスポンス型
+ */
+export interface AnalyzeReviewResponse {
+  success: boolean;
+  review?: any;               // 更新後のレビュー情報
+  analysis?: AIAnalysisResult; // AI分析結果
+  error?: string;
+}

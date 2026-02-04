@@ -7,12 +7,12 @@ export type Review = {
   text: string;
   status: 'unreplied' | 'replied' | 'auto_replied';
   risk: 'high' | 'medium' | 'low';
-  aiSummary: string;
-  aiCategories: string[];
-  aiRiskReason: string;
+  aiSummary: string | null;
+  aiCategories: string[] | null;
+  aiRiskReason: string | null;
   reply?: string;
   replyCreatedAt?: Date;
-  replyDraft?: string;
+  replyDraft?: string | null;
   photos?: string[];
 };
 
