@@ -4,7 +4,9 @@
  */
 
 import { DashboardStats } from '../types';
-import { mockStats } from '../mock/stats';
+import { createClient } from '../supabase/client';
+import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
+import { ja } from 'date-fns/locale';
 
 /**
  * ダッシュボード統計データを取得
@@ -12,17 +14,36 @@ import { mockStats } from '../mock/stats';
  * @returns ダッシュボード統計
  */
 export async function fetchDashboardStats(): Promise<DashboardStats> {
-  // 現在: モックデータを返す
-  // 将来: Supabaseから集計データを取得、またはリアルタイムで計算
+  const supabase = createClient();
   
-  // 本番実装例（コメントアウト）
-  /*
-  // Supabaseから集計
+  // Supabaseから全レビューを取得
   const { data: reviews, error } = await supabase
     .from('reviews')
-    .select('rating, status, date, aiCategories');
+    .select('rating, status, review_created_at');
   
-  if (error) throw error;
+  if (error) {
+    console.error('統計データ取得エラー:', error);
+    throw new Error(`統計データの取得に失敗しました: ${error.message}`);
+  }
+  
+  // データが存在しない場合のデフォルト値
+  if (!reviews || reviews.length === 0) {
+    return {
+      averageRating: 0,
+      totalReviews: 0,
+      negativeRate: 0,
+      replyRate: 0,
+      reviewGrowth: [],
+      ratingDistribution: [
+        { rating: 1, count: 0 },
+        { rating: 2, count: 0 },
+        { rating: 3, count: 0 },
+        { rating: 4, count: 0 },
+        { rating: 5, count: 0 },
+      ],
+      negativeFactors: [],
+    };
+  }
   
   // 統計を計算
   const totalReviews = reviews.length;
@@ -32,29 +53,63 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
   const repliedCount = reviews.filter(r => r.status === 'replied' || r.status === 'auto_replied').length;
   const replyRate = (repliedCount / totalReviews) * 100;
   
-  // レビュー推移を計算
+  // レビュー推移を計算（過去6ヶ月）
   const reviewGrowth = calculateReviewGrowth(reviews);
   
   // 星評価分布を計算
   const ratingDistribution = calculateRatingDistribution(reviews);
   
-  // ネガティブ要因を集計
-  const negativeFactors = calculateNegativeFactors(reviews);
+  // ネガティブ要因（暫定：AI分析機能は今後実装予定）
+  const negativeFactors = [
+    { factor: 'データ分析中', count: negativeCount },
+  ];
   
   return {
-    averageRating,
+    averageRating: Math.round(averageRating * 10) / 10,
     totalReviews,
-    negativeRate,
-    replyRate,
+    negativeRate: Math.round(negativeRate * 10) / 10,
+    replyRate: Math.round(replyRate * 10) / 10,
     reviewGrowth,
     ratingDistribution,
     negativeFactors,
   };
-  */
+}
+
+/**
+ * レビュー推移を計算（過去6ヶ月）
+ */
+function calculateReviewGrowth(reviews: any[]): { month: string; count: number }[] {
+  const months = [];
+  const now = new Date();
   
-  // モック: 少し遅延を入れてリアルなAPI呼び出しをシミュレート
-  await new Promise(resolve => setTimeout(resolve, 400));
-  return { ...mockStats };
+  // 過去6ヶ月の月初・月末を計算
+  for (let i = 5; i >= 0; i--) {
+    const targetMonth = subMonths(now, i);
+    const monthStart = startOfMonth(targetMonth);
+    const monthEnd = endOfMonth(targetMonth);
+    
+    const count = reviews.filter(r => {
+      const reviewDate = new Date(r.review_created_at);
+      return reviewDate >= monthStart && reviewDate <= monthEnd;
+    }).length;
+    
+    months.push({
+      month: format(targetMonth, 'M月', { locale: ja }),
+      count,
+    });
+  }
+  
+  return months;
+}
+
+/**
+ * 星評価分布を計算
+ */
+function calculateRatingDistribution(reviews: any[]): { rating: number; count: number }[] {
+  return [1, 2, 3, 4, 5].map(rating => ({
+    rating,
+    count: reviews.filter(r => r.rating === rating).length,
+  }));
 }
 
 /**
@@ -66,28 +121,54 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
 export async function fetchReviewGrowth(
   months: number = 6
 ): Promise<{ month: string; count: number }[]> {
-  // 現在: モックデータから取得
-  // 将来: Supabaseから期間を指定して集計
-  
-  // 本番実装例（コメントアウト）
-  /*
-  const startDate = new Date();
-  startDate.setMonth(startDate.getMonth() - months);
+  const supabase = createClient();
+  const startDate = subMonths(new Date(), months);
   
   const { data, error } = await supabase
     .from('reviews')
-    .select('date')
-    .gte('date', startDate.toISOString());
+    .select('review_created_at')
+    .gte('review_created_at', startDate.toISOString());
   
-  if (error) throw error;
+  if (error) {
+    console.error('レビュー推移取得エラー:', error);
+    throw new Error(`レビュー推移の取得に失敗しました: ${error.message}`);
+  }
+  
+  if (!data || data.length === 0) {
+    return [];
+  }
   
   // 月別に集計
-  const monthlyData = groupByMonth(data);
-  return monthlyData;
-  */
+  return calculateReviewGrowthForMonths(data, months);
+}
+
+/**
+ * 指定月数分のレビュー推移を計算
+ */
+function calculateReviewGrowthForMonths(
+  reviews: any[],
+  months: number
+): { month: string; count: number }[] {
+  const monthsData = [];
+  const now = new Date();
   
-  await new Promise(resolve => setTimeout(resolve, 300));
-  return mockStats.reviewGrowth.slice(-months);
+  for (let i = months - 1; i >= 0; i--) {
+    const targetMonth = subMonths(now, i);
+    const monthStart = startOfMonth(targetMonth);
+    const monthEnd = endOfMonth(targetMonth);
+    
+    const count = reviews.filter(r => {
+      const reviewDate = new Date(r.review_created_at);
+      return reviewDate >= monthStart && reviewDate <= monthEnd;
+    }).length;
+    
+    monthsData.push({
+      month: format(targetMonth, 'M月', { locale: ja }),
+      count,
+    });
+  }
+  
+  return monthsData;
 }
 
 /**
@@ -98,16 +179,20 @@ export async function fetchReviewGrowth(
 export async function fetchRatingDistribution(): Promise<
   { rating: number; count: number }[]
 > {
-  // 現在: モックデータから取得
-  // 将来: Supabaseから集計
+  const supabase = createClient();
   
-  // 本番実装例（コメントアウト）
-  /*
   const { data, error } = await supabase
     .from('reviews')
     .select('rating');
   
-  if (error) throw error;
+  if (error) {
+    console.error('星評価分布取得エラー:', error);
+    throw new Error(`星評価分布の取得に失敗しました: ${error.message}`);
+  }
+  
+  if (!data || data.length === 0) {
+    return [1, 2, 3, 4, 5].map(rating => ({ rating, count: 0 }));
+  }
   
   // 星評価別に集計
   const distribution = [1, 2, 3, 4, 5].map(rating => ({
@@ -116,10 +201,6 @@ export async function fetchRatingDistribution(): Promise<
   }));
   
   return distribution;
-  */
-  
-  await new Promise(resolve => setTimeout(resolve, 300));
-  return [...mockStats.ratingDistribution];
 }
 
 /**
@@ -130,37 +211,27 @@ export async function fetchRatingDistribution(): Promise<
 export async function fetchNegativeFactors(): Promise<
   { factor: string; count: number }[]
 > {
-  // 現在: モックデータから取得
-  // 将来: Supabaseからネガティブレビューのカテゴリを集計
+  const supabase = createClient();
   
-  // 本番実装例（コメントアウト）
-  /*
+  // AI分析機能は今後実装予定のため、暫定的にネガティブレビュー数のみ返す
   const { data, error } = await supabase
     .from('reviews')
-    .select('aiCategories')
+    .select('rating')
     .lte('rating', 3);
   
-  if (error) throw error;
+  if (error) {
+    console.error('ネガティブ要因取得エラー:', error);
+    throw new Error(`ネガティブ要因の取得に失敗しました: ${error.message}`);
+  }
   
-  // カテゴリを集計
-  const categoryCount = new Map<string, number>();
-  data.forEach(review => {
-    review.aiCategories.forEach((category: string) => {
-      categoryCount.set(category, (categoryCount.get(category) || 0) + 1);
-    });
-  });
+  if (!data || data.length === 0) {
+    return [];
+  }
   
-  // TOP3を抽出
-  const factors = Array.from(categoryCount.entries())
-    .map(([factor, count]) => ({ factor, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 3);
-  
-  return factors;
-  */
-  
-  await new Promise(resolve => setTimeout(resolve, 300));
-  return [...mockStats.negativeFactors];
+  // 暫定: AI分析機能実装までは簡易表示
+  return [
+    { factor: 'AI分析準備中', count: data.length },
+  ];
 }
 
 /**
@@ -174,25 +245,55 @@ export async function fetchStatsByPeriod(
   startDate: Date,
   endDate: Date
 ): Promise<DashboardStats> {
-  // 現在: モックデータを返す（期間は無視）
-  // 将来: Supabaseから期間を指定して集計
+  const supabase = createClient();
   
-  console.log('[Mock] 期間指定で統計取得:', { startDate, endDate });
-  
-  // 本番実装例（コメントアウト）
-  /*
   const { data: reviews, error } = await supabase
     .from('reviews')
-    .select('*')
-    .gte('date', startDate.toISOString())
-    .lte('date', endDate.toISOString());
+    .select('rating, status, review_created_at')
+    .gte('review_created_at', startDate.toISOString())
+    .lte('review_created_at', endDate.toISOString());
   
-  if (error) throw error;
+  if (error) {
+    console.error('期間指定統計取得エラー:', error);
+    throw new Error(`期間指定統計の取得に失敗しました: ${error.message}`);
+  }
+  
+  if (!reviews || reviews.length === 0) {
+    return {
+      averageRating: 0,
+      totalReviews: 0,
+      negativeRate: 0,
+      replyRate: 0,
+      reviewGrowth: [],
+      ratingDistribution: [
+        { rating: 1, count: 0 },
+        { rating: 2, count: 0 },
+        { rating: 3, count: 0 },
+        { rating: 4, count: 0 },
+        { rating: 5, count: 0 },
+      ],
+      negativeFactors: [],
+    };
+  }
   
   // 統計を計算（fetchDashboardStatsと同様のロジック）
-  // ...
-  */
+  const totalReviews = reviews.length;
+  const averageRating = reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews;
+  const negativeCount = reviews.filter(r => r.rating <= 3).length;
+  const negativeRate = (negativeCount / totalReviews) * 100;
+  const repliedCount = reviews.filter(r => r.status === 'replied' || r.status === 'auto_replied').length;
+  const replyRate = (repliedCount / totalReviews) * 100;
   
-  await new Promise(resolve => setTimeout(resolve, 400));
-  return { ...mockStats };
+  const reviewGrowth = calculateReviewGrowth(reviews);
+  const ratingDistribution = calculateRatingDistribution(reviews);
+  
+  return {
+    averageRating: Math.round(averageRating * 10) / 10,
+    totalReviews,
+    negativeRate: Math.round(negativeRate * 10) / 10,
+    replyRate: Math.round(replyRate * 10) / 10,
+    reviewGrowth,
+    ratingDistribution,
+    negativeFactors: [{ factor: 'データ分析中', count: negativeCount }],
+  };
 }

@@ -39,7 +39,17 @@ export function ReviewTable({ reviews }: ReviewTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {reviews.map((review) => (
+            {reviews.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-24 text-center">
+                  <div className="flex flex-col items-center justify-center text-gray-500">
+                    <p className="text-sm">レビューがありません</p>
+                    <p className="text-xs mt-1">Google Business Profileとの連携を確認してください</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              reviews.map((review) => (
               <TableRow
                 key={review.id}
                 className="cursor-pointer hover:bg-gray-50"
@@ -99,7 +109,8 @@ export function ReviewTable({ reviews }: ReviewTableProps) {
                   </Button>
                 </TableCell>
               </TableRow>
-            ))}
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

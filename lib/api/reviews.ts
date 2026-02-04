@@ -5,13 +5,40 @@
 
 import { Review } from '../types';
 import { UpdateReviewInput } from './types';
-import {
-  mockReviews,
-  getReviewById as getMockReviewById,
-  getUnrepliedReviews as getMockUnrepliedReviews,
-  getNegativeReviews as getMockNegativeReviews,
-  getHighRiskReviews as getMockHighRiskReviews,
-} from '../mock/reviews';
+import { createClient } from '../supabase/client';
+
+/**
+ * データベースのレビューレコードをフロントエンド型に変換
+ */
+function convertDbReviewToReview(dbReview: any): Review {
+  // リスク判定ロジック: 1-2星かつ未返信 = high、3星かつ未返信 = medium、それ以外 = low
+  let risk: 'high' | 'medium' | 'low' = 'low';
+  if (dbReview.status === 'unreplied') {
+    if (dbReview.rating <= 2) {
+      risk = 'high';
+    } else if (dbReview.rating === 3) {
+      risk = 'medium';
+    }
+  }
+  
+  return {
+    id: dbReview.id,
+    date: new Date(dbReview.review_created_at),
+    source: 'google',
+    rating: dbReview.rating as 1 | 2 | 3 | 4 | 5,
+    authorName: dbReview.author_name || '匿名',
+    text: dbReview.comment || '',
+    status: dbReview.status || 'unreplied',
+    risk,
+    // AI分析機能は今後実装予定のため、暫定値を設定
+    aiSummary: '',
+    aiCategories: [],
+    aiRiskReason: '',
+    reply: dbReview.reply_text || undefined,
+    replyCreatedAt: dbReview.reply_created_at ? new Date(dbReview.reply_created_at) : undefined,
+    photos: [],
+  };
+}
 
 /**
  * すべてのレビューを取得
@@ -19,40 +46,21 @@ import {
  * @returns レビュー一覧
  */
 export async function fetchReviews(): Promise<Review[]> {
-  // 現在: モックデータを返す
-  // 将来: Google My Business APIまたはSupabaseから取得
+  const supabase = createClient();
   
-  // 本番実装例（コメントアウト）
-  /*
-  // オプション1: Google My Business APIから直接取得
-  const session = await getSession();
-  if (!session) {
-    throw new Error('認証が必要です');
-  }
-  
-  const googleReviews = await fetchGoogleReviews(
-    session.user.location.id,
-    session.accessToken
-  );
-  
-  // Google形式からアプリ形式に変換
-  return googleReviews.map(convertGoogleReviewToReview);
-  */
-  
-  /*
-  // オプション2: Supabaseから取得（キャッシュ）
+  // Supabaseからレビューを取得（RLSで自動的にworkspace_idでフィルタリング）
   const { data, error } = await supabase
     .from('reviews')
     .select('*')
-    .order('date', { ascending: false });
+    .order('review_created_at', { ascending: false });
   
-  if (error) throw error;
-  return data;
-  */
+  if (error) {
+    console.error('レビュー取得エラー:', error);
+    throw new Error(`レビューの取得に失敗しました: ${error.message}`);
+  }
   
-  // モック: 少し遅延を入れてリアルなAPI呼び出しをシミュレート
-  await new Promise(resolve => setTimeout(resolve, 300));
-  return [...mockReviews];
+  // DBデータをフロントエンド型に変換
+  return (data || []).map(convertDbReviewToReview);
 }
 
 /**
@@ -62,11 +70,8 @@ export async function fetchReviews(): Promise<Review[]> {
  * @returns レビュー（見つからない場合はnull）
  */
 export async function fetchReviewById(id: string): Promise<Review | null> {
-  // 現在: モックデータから検索
-  // 将来: SupabaseまたはGMB APIから取得
+  const supabase = createClient();
   
-  // 本番実装例（コメントアウト）
-  /*
   const { data, error } = await supabase
     .from('reviews')
     .select('*')
@@ -77,14 +82,11 @@ export async function fetchReviewById(id: string): Promise<Review | null> {
     if (error.code === 'PGRST116') {
       return null; // 見つからない
     }
-    throw error;
+    console.error('レビュー取得エラー:', error);
+    throw new Error(`レビューの取得に失敗しました: ${error.message}`);
   }
   
-  return data;
-  */
-  
-  await new Promise(resolve => setTimeout(resolve, 200));
-  return getMockReviewById(id) || null;
+  return data ? convertDbReviewToReview(data) : null;
 }
 
 /**
@@ -93,23 +95,20 @@ export async function fetchReviewById(id: string): Promise<Review | null> {
  * @returns 未返信レビュー一覧
  */
 export async function fetchUnrepliedReviews(): Promise<Review[]> {
-  // 現在: モックデータをフィルタ
-  // 将来: Supabaseでフィルタリング
+  const supabase = createClient();
   
-  // 本番実装例（コメントアウト）
-  /*
   const { data, error } = await supabase
     .from('reviews')
     .select('*')
     .eq('status', 'unreplied')
-    .order('date', { ascending: false });
+    .order('review_created_at', { ascending: false });
   
-  if (error) throw error;
-  return data;
-  */
+  if (error) {
+    console.error('未返信レビュー取得エラー:', error);
+    throw new Error(`未返信レビューの取得に失敗しました: ${error.message}`);
+  }
   
-  await new Promise(resolve => setTimeout(resolve, 200));
-  return getMockUnrepliedReviews();
+  return (data || []).map(convertDbReviewToReview);
 }
 
 /**
@@ -118,23 +117,20 @@ export async function fetchUnrepliedReviews(): Promise<Review[]> {
  * @returns ネガティブレビュー一覧
  */
 export async function fetchNegativeReviews(): Promise<Review[]> {
-  // 現在: モックデータをフィルタ
-  // 将来: Supabaseでフィルタリング
+  const supabase = createClient();
   
-  // 本番実装例（コメントアウト）
-  /*
   const { data, error } = await supabase
     .from('reviews')
     .select('*')
     .lte('rating', 3)
-    .order('date', { ascending: false });
+    .order('review_created_at', { ascending: false });
   
-  if (error) throw error;
-  return data;
-  */
+  if (error) {
+    console.error('ネガティブレビュー取得エラー:', error);
+    throw new Error(`ネガティブレビューの取得に失敗しました: ${error.message}`);
+  }
   
-  await new Promise(resolve => setTimeout(resolve, 200));
-  return getMockNegativeReviews();
+  return (data || []).map(convertDbReviewToReview);
 }
 
 /**
@@ -143,11 +139,23 @@ export async function fetchNegativeReviews(): Promise<Review[]> {
  * @returns 高リスクレビュー一覧
  */
 export async function fetchHighRiskReviews(): Promise<Review[]> {
-  // 現在: モックデータをフィルタ
-  // 将来: Supabaseでフィルタリング
+  const supabase = createClient();
   
-  await new Promise(resolve => setTimeout(resolve, 200));
-  return getMockHighRiskReviews();
+  // 注意: risk列がDBに存在しない場合は、評価とステータスでフィルタリング
+  // 現時点では未返信かつ低評価（1-2星）をハイリスクとみなす
+  const { data, error } = await supabase
+    .from('reviews')
+    .select('*')
+    .eq('status', 'unreplied')
+    .lte('rating', 2)
+    .order('review_created_at', { ascending: false });
+  
+  if (error) {
+    console.error('高リスクレビュー取得エラー:', error);
+    throw new Error(`高リスクレビューの取得に失敗しました: ${error.message}`);
+  }
+  
+  return (data || []).map(convertDbReviewToReview);
 }
 
 /**
