@@ -54,7 +54,7 @@ export function ReviewFilters({ unrepliedCount, actionRequiredCount, respondedCo
             placeholder="レビューを検索..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
+            className="pl-9 bg-white text-gray-700"
           />
         </div>
       </div>

@@ -58,8 +58,8 @@ export function searchReviews(reviews: Review[], query: string): Review[] {
     review =>
       review.text.toLowerCase().includes(lowerQuery) ||
       review.authorName.toLowerCase().includes(lowerQuery) ||
-      review.aiSummary.toLowerCase().includes(lowerQuery) ||
-      review.aiCategories.some(cat => cat.toLowerCase().includes(lowerQuery))
+      (review.aiSummary && review.aiSummary.toLowerCase().includes(lowerQuery)) ||
+      (review.aiCategories && review.aiCategories.some(cat => cat.toLowerCase().includes(lowerQuery)))
   );
 }
 
@@ -133,7 +133,7 @@ export function filterByRecentDays(reviews: Review[], days: number): Review[] {
  */
 export function filterByCategory(reviews: Review[], category: string): Review[] {
   return reviews.filter(review =>
-    review.aiCategories.includes(category)
+    review.aiCategories && review.aiCategories.includes(category)
   );
 }
 
