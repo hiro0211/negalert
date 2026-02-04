@@ -158,34 +158,63 @@ export async function fetchGoogleReviews(
   locationId: string,
   accessToken: string
 ): Promise<GoogleReview[]> {
-  // 現在: モック実装
-  // 将来: GMB API /accounts/{accountId}/locations/{locationId}/reviews を呼び出し
+  // Google My Business API v4 のレビューエンドポイント
+  // 注意: v4 API は廃止予定のため、将来的には Google Business Profile API に移行が必要
+  const url = `https://mybusiness.googleapis.com/v4/${locationId}/reviews`;
   
-  console.log('[Mock] Googleレビュー取得:', { locationId, accessToken });
+  console.log('📥 Googleレビュー取得開始:', { locationId });
   
-  // 本番実装例（コメントアウト）
-  /*
-  const response = await fetch(
-    `${GMB_API_BASE}/${locationId}/reviews`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    }
-  );
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+  });
   
   if (!response.ok) {
-    throw new Error('レビュー取得に失敗しました');
+    const errorData = await response.json().catch(() => ({}));
+    console.error('レビュー取得エラー:', errorData);
+    
+    if (response.status === 401) {
+      throw new Error('認証エラー: アクセストークンが無効です');
+    } else if (response.status === 403) {
+      throw new Error('権限エラー: レビューへのアクセス権限がありません');
+    } else if (response.status === 404) {
+      // ロケーションが見つからない、またはレビューがない場合
+      console.log('⚠️ レビューが見つかりませんでした');
+      return [];
+    }
+    
+    throw new Error(`レビュー取得に失敗しました: ${response.status}`);
   }
   
   const data = await response.json();
   
-  return data.reviews || [];
-  */
+  if (!data.reviews || data.reviews.length === 0) {
+    console.log('⚠️ レビューが0件でした');
+    return [];
+  }
   
-  // モック: 空配列を返す（実際のレビューはlib/mock/reviews.tsから取得）
-  return [];
+  // レスポンスをGoogleReview型に変換
+  const reviews: GoogleReview[] = data.reviews.map((review: any) => ({
+    reviewId: review.reviewId || review.name,
+    reviewer: {
+      displayName: review.reviewer?.displayName || '匿名',
+      profilePhotoUrl: review.reviewer?.profilePhotoUrl,
+    },
+    starRating: review.starRating || 'THREE',
+    comment: review.comment || '',
+    createTime: review.createTime,
+    updateTime: review.updateTime,
+    reviewReply: review.reviewReply ? {
+      comment: review.reviewReply.comment,
+      updateTime: review.reviewReply.updateTime,
+    } : undefined,
+  }));
+  
+  console.log(`✅ レビュー取得成功: ${reviews.length}件`);
+  
+  return reviews;
 }
 
 /**

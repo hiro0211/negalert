@@ -148,3 +148,14 @@ export type SyncLocationsResponse = {
   syncedCount: number;
   error?: string;
 };
+
+// =====================================
+// レビュー同期関連型
+// =====================================
+
+export type SyncReviewsResponse = {
+  success: boolean;
+  totalReviews: number;
+  syncedWorkspaces: number;
+  error?: string;
+};

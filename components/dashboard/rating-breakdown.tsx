@@ -32,7 +32,6 @@ export function RatingBreakdown({ data }: RatingBreakdownProps) {
               paddingAngle={2}
               dataKey="value"
               label={({ name, value }) => `${name}: ${value}`}
-              labelStyle={{ fill: '#111827', fontSize: '12px', fontWeight: '500' }}
             >
               {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
