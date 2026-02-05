@@ -1,5 +1,5 @@
 /**
- * デバッグ用: Google Places APIから他店舗のレビューをインポート
+ * モック用: Google Places APIから他店舗のレビューをインポート
  * モックモード（NEXT_PUBLIC_USE_MOCK_DATA=true）でのみ動作
  */
 
@@ -47,7 +47,7 @@ interface ImportPlaceReviewsResponse {
 }
 
 /**
- * POST /api/debug/import-place-reviews
+ * POST /api/mock/import-place-reviews
  * Google Places APIから指定したplaceIdのレビューを取得してDBに保存
  */
 export async function POST(request: NextRequest) {
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     // 1. モックモードチェック（最優先）
     if (process.env.NEXT_PUBLIC_USE_MOCK_DATA !== 'true') {
       return NextResponse.json(
-        { success: false, error: 'Mock mode is disabled' } as ImportPlaceReviewsResponse,
+        { success: false, error: 'このエンドポイントはモックモード専用です' } as ImportPlaceReviewsResponse,
         { status: 403 }
       );
     }
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
 
     if (authError || !user) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' } as ImportPlaceReviewsResponse,
+        { success: false, error: '認証が必要です' } as ImportPlaceReviewsResponse,
         { status: 401 }
       );
     }
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
 
     if (!placeId) {
       return NextResponse.json(
-        { success: false, error: 'placeId is required' } as ImportPlaceReviewsResponse,
+        { success: false, error: 'placeIdが必要です' } as ImportPlaceReviewsResponse,
         { status: 400 }
       );
     }
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     
     if (workspaces.length === 0) {
       return NextResponse.json(
-        { success: false, error: 'No workspace found for user' } as ImportPlaceReviewsResponse,
+        { success: false, error: 'ワークスペースが見つかりません' } as ImportPlaceReviewsResponse,
         { status: 404 }
       );
     }
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
     
     if (!apiKey) {
       return NextResponse.json(
-        { success: false, error: 'GOOGLE_PLACES_API_KEY is not configured' } as ImportPlaceReviewsResponse,
+        { success: false, error: 'GOOGLE_PLACES_API_KEYが設定されていません' } as ImportPlaceReviewsResponse,
         { status: 500 }
       );
     }
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
 
     if (placesData.status !== 'OK') {
       return NextResponse.json(
-        { success: false, error: `Google Places API error: ${placesData.status}` } as ImportPlaceReviewsResponse,
+        { success: false, error: `Google Places APIエラー: ${placesData.status}` } as ImportPlaceReviewsResponse,
         { status: 500 }
       );
     }
@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
     if (dbError) {
       console.error('DB保存エラー:', dbError);
       return NextResponse.json(
-        { success: false, error: `Database error: ${dbError.message}` } as ImportPlaceReviewsResponse,
+        { success: false, error: `データベースエラー: ${dbError.message}` } as ImportPlaceReviewsResponse,
         { status: 500 }
       );
     }

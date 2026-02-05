@@ -67,7 +67,7 @@ export default function SettingsPage() {
     setImportStatus({ type: null, message: '' });
 
     try {
-      const response = await fetch('/api/debug/import-place-reviews', {
+      const response = await fetch('/api/mock/import-place-reviews', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ export default function SettingsPage() {
           <TabsTrigger value="reply" className="text-gray-700">返信設定</TabsTrigger>
           <TabsTrigger value="danger-words" className="text-gray-700">危険語辞書</TabsTrigger>
           {isMockMode && (
-            <TabsTrigger value="test-data" className="text-gray-700">テストデータ</TabsTrigger>
+            <TabsTrigger value="test-data" className="text-gray-700">モックデータ</TabsTrigger>
           )}
         </TabsList>
 
@@ -258,9 +258,9 @@ export default function SettingsPage() {
           <TabsContent value="test-data">
             <Card>
               <CardHeader>
-                <CardTitle className="text-gray-700">テストデータのインポート</CardTitle>
+                <CardTitle className="text-gray-700">モックデータのインポート</CardTitle>
                 <CardDescription className="text-gray-600">
-                  Google Places APIから実店舗のレビューデータを取得してテストできます
+                  Google Places APIから実店舗のレビューデータを取得してモックデータとして使用できます
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">

@@ -1,5 +1,6 @@
 /**
- * デバッグ用: oauth_tokensテーブルの構造を確認
+ * モック用: oauth_tokensテーブルの構造を確認
+ * モックモード（NEXT_PUBLIC_USE_MOCK_DATA=true）でのみ動作
  */
 
 import { NextResponse } from 'next/server';
@@ -7,6 +8,14 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function GET() {
   try {
+    // モックモードチェック
+    if (process.env.NEXT_PUBLIC_USE_MOCK_DATA !== 'true') {
+      return NextResponse.json(
+        { error: 'このエンドポイントはモックモード専用です' },
+        { status: 403 }
+      );
+    }
+
     const supabase = await createClient();
     
     // テーブル構造を確認
