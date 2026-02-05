@@ -8,6 +8,35 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { saveGoogleToken } from '@/lib/api/tokens';
 
+/**
+ * ログイン直後にバックグラウンドでレビューを同期
+ * awaitせずに実行することで、ユーザーを待たせない
+ */
+async function syncInBackground(request: NextRequest) {
+  try {
+    const baseUrl = new URL(request.url).origin;
+    
+    // 店舗同期
+    await fetch(`${baseUrl}/api/locations/sync`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    // レビュー同期
+    await fetch(`${baseUrl}/api/reviews/sync`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  } catch (error) {
+    // エラーはログに記録するが、認証フローには影響させない
+    // ユーザーは手動同期ボタンで再試行可能
+  }
+}
+
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
@@ -51,6 +80,10 @@ export async function GET(request: NextRequest) {
           refreshToken: provider_refresh_token || null,
           expiresAt: expires_at,
         });
+        
+        // バックグラウンドで同期を開始（awaitしない）
+        // ユーザーを待たせずにダッシュボードへリダイレクト
+        syncInBackground(request);
       }
     } catch (tokenError) {
       // Token保存エラーは記録するが、認証フローは継続

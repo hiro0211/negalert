@@ -13,8 +13,9 @@ import { useReviews } from '@/lib/hooks/useReviews';
 // TODO機能を一時的に非表示
 // import { useTodos } from '@/lib/hooks/useTodos';
 import { countUnrepliedNegativeReviews } from '@/lib/services/review-stats';
-import { Star, MessageSquare, TrendingDown, Reply } from 'lucide-react';
+import { Star, MessageSquare, TrendingDown, Reply, RefreshCw } from 'lucide-react';
 import { useMemo } from 'react';
+import { Button } from '@/components/ui/button';
 
 export default function DashboardPage() {
   // カスタムフックでデータを取得
@@ -46,9 +47,33 @@ export default function DashboardPage() {
     return <ErrorMessage error={statsError} onRetry={refetchStats} />;
   }
 
-  // データが存在しない場合
-  if (!stats) {
-    return <ErrorMessage error={new Error('統計データが取得できませんでした')} onRetry={refetchStats} />;
+  // データが存在しない場合（レビューがゼロ件）
+  if (!stats || stats.totalReviews === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 px-4">
+        <div className="text-center max-w-md">
+          <MessageSquare className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-700 mb-2">レビューデータがありません</h2>
+          <p className="text-gray-600 mb-6">
+            ヘッダーの「レビューを更新」ボタンをクリックして、Google Business Profileからレビューを取得してください。
+          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <p className="text-sm text-blue-800">
+              初回ログイン時は自動的に同期を試みていますが、データがまだ取得されていない可能性があります。
+              数秒後にページを更新するか、手動で同期ボタンをクリックしてください。
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => window.location.reload()}
+            className="gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            ページを更新
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
