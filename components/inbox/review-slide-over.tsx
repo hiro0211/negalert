@@ -306,7 +306,7 @@ export function ReviewSlideOver({ review: initialReview, open, onOpenChange }: R
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
               placeholder="返信を入力してください..."
-              className="min-h-[150px] mb-4"
+              className="min-h-[150px] mb-4 text-gray-600"
               disabled={isPublishing}
             />
 
