@@ -43,12 +43,6 @@ export function generateGoogleAuthUrl(config: GoogleOAuthConfig): string {
   */
   
   // モック: ダッシュボードにリダイレクト
-  console.log('[Mock] Google OAuth URL生成:', {
-    clientId: config.clientId,
-    redirectUri: config.redirectUri,
-    scopes,
-  });
-  
   return '/dashboard';
 }
 
@@ -63,8 +57,6 @@ export async function exchangeCodeForTokens(
 ): Promise<GoogleTokenResponse> {
   // 現在: モック実装
   // 将来: Google Token Endpointを呼び出し
-  
-  console.log('[Mock] 認証コードをトークンに交換:', code);
   
   // 本番実装例（コメントアウト）
   /*
@@ -128,8 +120,6 @@ export async function refreshAccessToken(
   });
   
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    console.error('トークンリフレッシュエラー:', errorData);
     throw new Error(`トークンのリフレッシュに失敗しました: ${response.status}`);
   }
   

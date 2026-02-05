@@ -22,7 +22,6 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
     .select('rating, status, review_created_at');
   
   if (error) {
-    console.error('統計データ取得エラー:', error);
     throw new Error(`統計データの取得に失敗しました: ${error.message}`);
   }
   
@@ -207,7 +206,6 @@ export async function fetchReviewGrowth(
     .gte('review_created_at', startDate.toISOString());
   
   if (error) {
-    console.error('レビュー推移取得エラー:', error);
     throw new Error(`レビュー推移の取得に失敗しました: ${error.message}`);
   }
   
@@ -263,7 +261,6 @@ export async function fetchRatingDistribution(): Promise<
     .select('rating');
   
   if (error) {
-    console.error('星評価分布取得エラー:', error);
     throw new Error(`星評価分布の取得に失敗しました: ${error.message}`);
   }
   
@@ -297,7 +294,6 @@ export async function fetchNegativeFactors(): Promise<
     .lte('rating', 3);
   
   if (error) {
-    console.error('ネガティブ要因取得エラー:', error);
     throw new Error(`ネガティブ要因の取得に失敗しました: ${error.message}`);
   }
   
@@ -331,7 +327,6 @@ export async function fetchStatsByPeriod(
     .lte('review_created_at', endDate.toISOString());
   
   if (error) {
-    console.error('期間指定統計取得エラー:', error);
     throw new Error(`期間指定統計の取得に失敗しました: ${error.message}`);
   }
   

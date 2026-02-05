@@ -59,7 +59,6 @@ export async function saveGoogleToken(params: SaveTokenParams): Promise<void> {
     // 既存のRefresh Tokenがあればそれを使用
     if (existingToken) {
       finalRefreshToken = existingToken;
-      console.log('ℹ️ 既存のRefresh Tokenを保持します');
     }
   }
   
@@ -74,16 +73,8 @@ export async function saveGoogleToken(params: SaveTokenParams): Promise<void> {
   });
   
   if (error) {
-    console.error('Token保存エラー:', error);
     throw new Error('Tokenの保存に失敗しました');
   }
-  
-  console.log('✅ Google OAuth Token保存成功:', {
-    userId,
-    hasRefreshToken: !!finalRefreshToken,
-    isNewRefreshToken: !!refreshToken,
-    expiresAt: expiresAtTimestamp,
-  });
 }
 
 /**
@@ -117,7 +108,6 @@ export async function getGoogleToken(
       // レコードが見つからない場合
       return null;
     }
-    console.error('Token取得エラー:', error);
     throw new Error('Tokenの取得に失敗しました');
   }
   
@@ -146,11 +136,8 @@ export async function deleteGoogleToken(
     .eq('provider', 'google');
   
   if (error) {
-    console.error('Token削除エラー:', error);
     throw new Error('Tokenの削除に失敗しました');
   }
-  
-  console.log('✅ Google OAuth Token削除成功:', userId);
 }
 
 /**
@@ -181,7 +168,6 @@ export async function getValidAccessToken(
   
   // トークンが有効ならそのまま返す
   if (isValid && token.access_token) {
-    console.log('✅ 有効なアクセストークンを使用します');
     return token.access_token;
   }
   
@@ -189,8 +175,6 @@ export async function getValidAccessToken(
   if (!token.refresh_token) {
     throw new Error('リフレッシュトークンが見つかりません。再度ログインしてください。');
   }
-  
-  console.log('⚠️ アクセストークンが期限切れです。リフレッシュします...');
   
   try {
     // リフレッシュトークンでアクセストークンを更新
@@ -208,11 +192,8 @@ export async function getValidAccessToken(
       expiresAt: newExpiresAt,
     });
     
-    console.log('✅ アクセストークンをリフレッシュしました');
-    
     return refreshResult.accessToken;
   } catch (error) {
-    console.error('トークンリフレッシュエラー:', error);
     throw new Error('アクセストークンの更新に失敗しました。再度ログインしてください。');
   }
 }

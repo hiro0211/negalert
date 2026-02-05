@@ -43,29 +43,11 @@ export async function initiateGoogleOAuth(): Promise<{ authUrl: string }> {
   });
 
   if (error) {
-    console.error('Google OAuth開始エラー:', error);
     throw new Error('認証の開始に失敗しました');
   }
 
   if (!data.url) {
     throw new Error('認証URLの生成に失敗しました');
-  }
-
-  // デバッグ: 生成されたURLを確認（開発時のみ）
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔗 生成された認証URL:', data.url);
-    // URLパラメータを解析してログ出力
-    try {
-      const url = new URL(data.url);
-      console.log('📋 URLパラメータ:', {
-        scope: url.searchParams.get('scope'),
-        access_type: url.searchParams.get('access_type'),
-        prompt: url.searchParams.get('prompt'),
-        redirect_uri: url.searchParams.get('redirect_uri'),
-      });
-    } catch {
-      // URL解析に失敗しても続行
-    }
   }
 
   return { authUrl: data.url };
@@ -89,7 +71,6 @@ export async function getSession(): Promise<AuthSession | null> {
   const { data: { session }, error } = await supabase.auth.getSession();
 
   if (error) {
-    console.error('セッション取得エラー:', error);
     return null;
   }
 
@@ -126,7 +107,6 @@ export async function signOut(): Promise<void> {
   const { error } = await supabase.auth.signOut();
   
   if (error) {
-    console.error('ログアウトエラー:', error);
     throw new Error('ログアウトに失敗しました');
   }
 

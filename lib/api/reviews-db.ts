@@ -19,8 +19,6 @@ export async function updateReviewReplyInDb(
   repliedAt: string,
   supabase: SupabaseClient
 ): Promise<void> {
-  console.log('💾 DB更新: レビュー返信を保存', { reviewId });
-  
   const { error } = await supabase
     .from('reviews')
     .update({
@@ -32,11 +30,8 @@ export async function updateReviewReplyInDb(
     .eq('id', reviewId);
   
   if (error) {
-    console.error('DB更新エラー:', error);
     throw new Error(`DB更新に失敗しました: ${error.message}`);
   }
-  
-  console.log('✅ DB更新成功: レビュー返信を保存');
 }
 
 /**
@@ -49,8 +44,6 @@ export async function deleteReviewReplyInDb(
   reviewId: string,
   supabase: SupabaseClient
 ): Promise<void> {
-  console.log('💾 DB更新: レビュー返信を削除', { reviewId });
-  
   const { error } = await supabase
     .from('reviews')
     .update({
@@ -62,11 +55,8 @@ export async function deleteReviewReplyInDb(
     .eq('id', reviewId);
   
   if (error) {
-    console.error('DB更新エラー:', error);
     throw new Error(`DB更新に失敗しました: ${error.message}`);
   }
-  
-  console.log('✅ DB更新成功: レビュー返信を削除');
 }
 
 /**
@@ -80,8 +70,6 @@ export async function getReviewFromDb(
   reviewId: string,
   supabase: SupabaseClient
 ): Promise<any> {
-  console.log('🔍 DB取得: レビュー情報', { reviewId });
-  
   const { data, error } = await supabase
     .from('reviews')
     .select('*')
@@ -89,16 +77,12 @@ export async function getReviewFromDb(
     .single();
   
   if (error) {
-    console.error('レビュー取得エラー:', error);
-    
     if (error.code === 'PGRST116') {
       throw new Error('レビューが見つかりません');
     }
     
     throw new Error(`レビュー取得に失敗しました: ${error.message}`);
   }
-  
-  console.log('✅ レビュー取得成功');
   
   return data;
 }
@@ -148,8 +132,6 @@ export async function updateReviewAnalysisInDb(
   },
   supabase: SupabaseClient
 ): Promise<void> {
-  console.log('💾 DB更新: AI分析結果を保存', { reviewId });
-  
   const { error } = await supabase
     .from('reviews')
     .update({
@@ -163,9 +145,6 @@ export async function updateReviewAnalysisInDb(
     .eq('id', reviewId);
   
   if (error) {
-    console.error('DB更新エラー:', error);
     throw new Error(`DB更新に失敗しました: ${error.message}`);
   }
-  
-  console.log('✅ DB更新成功: AI分析結果を保存');
 }

@@ -17,7 +17,6 @@ export async function getServerSession(): Promise<AuthSession | null> {
   const { data: { session }, error } = await supabase.auth.getSession();
 
   if (error) {
-    console.error('セッション取得エラー:', error);
     return null;
   }
 

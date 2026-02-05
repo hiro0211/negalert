@@ -23,7 +23,6 @@ export async function syncWorkspaces(
   const client = supabase || await createServerClient();
   
   if (locations.length === 0) {
-    console.log('⚠️ 同期する店舗がありません');
     return 0;
   }
   
@@ -46,13 +45,10 @@ export async function syncWorkspaces(
     .select();
   
   if (error) {
-    console.error('Workspace同期エラー:', error);
     throw new Error(`Workspaceの同期に失敗しました: ${error.message}`);
   }
   
   const syncedCount = data?.length || 0;
-  console.log(`✅ Workspace同期成功: ${syncedCount}件`);
-  
   return syncedCount;
 }
 
@@ -76,11 +72,8 @@ export async function getWorkspaces(
     .order('created_at', { ascending: false });
   
   if (error) {
-    console.error('Workspace取得エラー:', error);
     throw new Error(`Workspaceの取得に失敗しました: ${error.message}`);
   }
-  
-  console.log(`✅ Workspace取得成功: ${data?.length || 0}件`);
   
   return data || [];
 }
@@ -109,7 +102,6 @@ export async function getWorkspace(
       // レコードが見つからない場合
       return null;
     }
-    console.error('Workspace取得エラー:', error);
     throw new Error(`Workspaceの取得に失敗しました: ${error.message}`);
   }
   
@@ -137,9 +129,6 @@ export async function deleteWorkspace(
     .eq('user_id', userId); // 自分のワークスペースのみ削除可能
   
   if (error) {
-    console.error('Workspace削除エラー:', error);
     throw new Error(`Workspaceの削除に失敗しました: ${error.message}`);
   }
-  
-  console.log('✅ Workspace削除成功:', workspaceId);
 }

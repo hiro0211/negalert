@@ -73,7 +73,6 @@ export async function fetchReviews(): Promise<Review[]> {
     .order('review_created_at', { ascending: false });
   
   if (error) {
-    console.error('レビュー取得エラー:', error);
     throw new Error(`レビューの取得に失敗しました: ${error.message}`);
   }
   
@@ -107,7 +106,6 @@ export async function fetchReviewById(id: string): Promise<Review | null> {
     if (error.code === 'PGRST116') {
       return null; // 見つからない
     }
-    console.error('レビュー取得エラー:', error);
     throw new Error(`レビューの取得に失敗しました: ${error.message}`);
   }
   
@@ -135,7 +133,6 @@ export async function fetchUnrepliedReviews(): Promise<Review[]> {
     .order('review_created_at', { ascending: false });
   
   if (error) {
-    console.error('未返信レビュー取得エラー:', error);
     throw new Error(`未返信レビューの取得に失敗しました: ${error.message}`);
   }
   
@@ -163,7 +160,6 @@ export async function fetchNegativeReviews(): Promise<Review[]> {
     .order('review_created_at', { ascending: false });
   
   if (error) {
-    console.error('ネガティブレビュー取得エラー:', error);
     throw new Error(`ネガティブレビューの取得に失敗しました: ${error.message}`);
   }
   
@@ -194,7 +190,6 @@ export async function fetchHighRiskReviews(): Promise<Review[]> {
     .order('review_created_at', { ascending: false });
   
   if (error) {
-    console.error('高リスクレビュー取得エラー:', error);
     throw new Error(`高リスクレビューの取得に失敗しました: ${error.message}`);
   }
   

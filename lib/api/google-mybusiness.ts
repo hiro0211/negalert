@@ -24,9 +24,6 @@ export async function getAccountId(accessToken: string): Promise<string> {
   });
   
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    console.error('アカウントID取得エラー:', errorData);
-    
     if (response.status === 401) {
       throw new Error('認証エラー: アクセストークンが無効です');
     } else if (response.status === 403) {
@@ -44,8 +41,6 @@ export async function getAccountId(accessToken: string): Promise<string> {
   
   // 最初のアカウントのIDを返す
   const accountId = data.accounts[0].name; // "accounts/123456789" 形式
-  console.log('✅ アカウントID取得成功:', accountId);
-  
   return accountId;
 }
 
@@ -73,9 +68,6 @@ export async function listLocations(
   });
   
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    console.error('ロケーション取得エラー:', errorData);
-    
     if (response.status === 401) {
       throw new Error('認証エラー: アクセストークンが無効です');
     } else if (response.status === 403) {
@@ -88,7 +80,6 @@ export async function listLocations(
   const data = await response.json();
   
   if (!data.locations || data.locations.length === 0) {
-    console.log('⚠️ ロケーションが見つかりませんでした');
     return [];
   }
   
@@ -99,8 +90,6 @@ export async function listLocations(
     address: formatAddress(loc.storefrontAddress),
     placeId: loc.metadata?.placeId,
   }));
-  
-  console.log(`✅ ロケーション取得成功: ${locations.length}件`);
   
   return locations;
 }
@@ -143,7 +132,6 @@ function formatAddress(address: any): string {
 export async function fetchGoogleLocations(
   accessToken: string
 ): Promise<GoogleLocation[]> {
-  console.warn('⚠️ fetchGoogleLocations() は廃止されました。listLocations() を使用してください。');
   return listLocations(accessToken);
 }
 
@@ -162,8 +150,6 @@ export async function fetchGoogleReviews(
   // 注意: v4 API は廃止予定のため、将来的には Google Business Profile API に移行が必要
   const url = `https://mybusiness.googleapis.com/v4/${locationId}/reviews`;
   
-  console.log('📥 Googleレビュー取得開始:', { locationId });
-  
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -172,16 +158,12 @@ export async function fetchGoogleReviews(
   });
   
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    console.error('レビュー取得エラー:', errorData);
-    
     if (response.status === 401) {
       throw new Error('認証エラー: アクセストークンが無効です');
     } else if (response.status === 403) {
       throw new Error('権限エラー: レビューへのアクセス権限がありません');
     } else if (response.status === 404) {
       // ロケーションが見つからない、またはレビューがない場合
-      console.log('⚠️ レビューが見つかりませんでした');
       return [];
     }
     
@@ -191,7 +173,6 @@ export async function fetchGoogleReviews(
   const data = await response.json();
   
   if (!data.reviews || data.reviews.length === 0) {
-    console.log('⚠️ レビューが0件でした');
     return [];
   }
   
@@ -212,8 +193,6 @@ export async function fetchGoogleReviews(
     } : undefined,
   }));
   
-  console.log(`✅ レビュー取得成功: ${reviews.length}件`);
-  
   return reviews;
 }
 
@@ -232,8 +211,6 @@ export async function replyToGoogleReview(
   // Google My Business API v4 のレビュー返信エンドポイント
   const url = `https://mybusiness.googleapis.com/v4/${reviewId}/reply`;
   
-  console.log('💬 Googleレビューに返信投稿:', { reviewId });
-  
   const response = await fetch(url, {
     method: 'PUT',
     headers: {
@@ -246,9 +223,6 @@ export async function replyToGoogleReview(
   });
   
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    console.error('返信投稿エラー:', errorData);
-    
     if (response.status === 401) {
       throw new Error('認証エラー: アクセストークンが無効です');
     } else if (response.status === 403) {
@@ -259,8 +233,6 @@ export async function replyToGoogleReview(
     
     throw new Error(`返信投稿に失敗しました: ${response.status}`);
   }
-  
-  console.log('✅ 返信投稿成功');
 }
 
 /**
@@ -276,8 +248,6 @@ export async function deleteGoogleReviewReply(
   // Google My Business API v4 のレビュー返信削除エンドポイント
   const url = `https://mybusiness.googleapis.com/v4/${reviewId}/reply`;
   
-  console.log('🗑️ Googleレビュー返信を削除:', { reviewId });
-  
   const response = await fetch(url, {
     method: 'DELETE',
     headers: {
@@ -287,9 +257,6 @@ export async function deleteGoogleReviewReply(
   });
   
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    console.error('返信削除エラー:', errorData);
-    
     if (response.status === 401) {
       throw new Error('認証エラー: アクセストークンが無効です');
     } else if (response.status === 403) {
@@ -300,6 +267,4 @@ export async function deleteGoogleReviewReply(
     
     throw new Error(`返信削除に失敗しました: ${response.status}`);
   }
-  
-  console.log('✅ 返信削除成功');
 }

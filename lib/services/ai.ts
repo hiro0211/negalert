@@ -77,8 +77,6 @@ export async function analyzeReviewWithAI(
 ${reviewText}`;
 
   try {
-    console.log('🤖 OpenAI API呼び出し開始:', { rating, textLength: reviewText.length });
-    
     // OpenAI APIを呼び出し
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -98,8 +96,6 @@ ${reviewText}`;
       throw new Error('OpenAI APIからのレスポンスが空です');
     }
     
-    console.log('✅ OpenAI API呼び出し成功');
-    
     // JSONをパース
     let result: AIAnalysisResult;
     try {
@@ -114,20 +110,12 @@ ${reviewText}`;
         replyDraft: String(parsed.replyDraft || 'ご利用ありがとうございました。'),
       };
     } catch (parseError) {
-      console.error('JSON パースエラー:', parseError);
       throw new Error('AI分析結果のパースに失敗しました');
     }
-    
-    console.log('📊 AI分析結果:', {
-      summary: result.summary,
-      risk: result.risk,
-      categoriesCount: result.categories.length,
-    });
     
     return result;
     
   } catch (error) {
-    console.error('❌ OpenAI API呼び出しエラー:', error);
     
     // エラーの種類に応じた処理
     if (error instanceof OpenAI.APIError) {
@@ -200,8 +188,6 @@ export async function generateReviewReport(
 ${reviewsText}`;
 
   try {
-    console.log('🤖 週間レポート生成開始:', { reviewCount: reviews.length });
-    
     // OpenAI APIを呼び出し
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -221,8 +207,6 @@ ${reviewsText}`;
       throw new Error('OpenAI APIからのレスポンスが空です');
     }
     
-    console.log('✅ 週間レポート生成成功');
-    
     // JSONをパース
     let result: WeeklyReportResult;
     try {
@@ -239,20 +223,12 @@ ${reviewsText}`;
         actionPlan: String(parsed.actionPlan || '引き続き顧客満足度の向上に努めましょう'),
       };
     } catch (parseError) {
-      console.error('JSON パースエラー:', parseError);
       throw new Error('週間レポートのパースに失敗しました');
     }
-    
-    console.log('📊 週間レポート結果:', {
-      sentiment: result.overallSentiment,
-      goodPointsCount: result.goodPoints.length,
-      badPointsCount: result.badPoints.length,
-    });
     
     return result;
     
   } catch (error) {
-    console.error('❌ 週間レポート生成エラー:', error);
     
     // エラーの種類に応じた処理
     if (error instanceof OpenAI.APIError) {

@@ -20,7 +20,6 @@ export async function syncReviews(
   supabase: SupabaseClient
 ): Promise<number> {
   if (reviews.length === 0) {
-    console.log('⚠️ 同期するレビューがありません');
     return 0;
   }
   
@@ -50,12 +49,10 @@ export async function syncReviews(
     .select();
   
   if (error) {
-    console.error('レビュー同期エラー:', error);
     throw new Error(`レビューの同期に失敗しました: ${error.message}`);
   }
   
   const syncedCount = data?.length || 0;
-  console.log(`✅ レビュー同期成功: ${syncedCount}件`);
   
   return syncedCount;
 }
