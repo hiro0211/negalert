@@ -9,13 +9,13 @@ export default function BillingPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">料金・プラン</h1>
-        <p className="text-gray-700 mt-1">現在のプランと使用状況</p>
+        <h1 className="text-3xl font-bold text-gray-700">料金・プラン</h1>
+        <p className="text-gray-800 mt-1">現在のプランと使用状況</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className="flex items-center justify-between text-gray-700">
             <span className="flex items-center gap-2">
               <CreditCard className="h-5 w-5" />
               現在のプラン
@@ -27,17 +27,17 @@ export default function BillingPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rounded-lg border p-4">
               <div className="text-sm text-gray-700 mb-1">月額料金</div>
-              <div className="text-3xl font-bold">¥9,800</div>
+              <div className="text-3xl font-bold text-gray-700">¥9,800</div>
             </div>
             <div className="rounded-lg border p-4">
               <div className="text-sm text-gray-700 mb-1">次回請求日</div>
-              <div className="text-xl font-semibold">2024年7月1日</div>
+              <div className="text-xl font-semibold text-gray-700">2024年7月1日</div>
             </div>
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">レビュー数の使用状況</span>
+              <span className="text-sm font-medium text-gray-700">レビュー数の使用状況</span>
               <span className="text-sm text-gray-700">15 / 500件</span>
             </div>
             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -47,7 +47,7 @@ export default function BillingPage() {
           </div>
 
           <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
-            <h3 className="font-semibold mb-2 flex items-center gap-2">
+            <h3 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
               プランのアップグレード
             </h3>
@@ -56,6 +56,7 @@ export default function BillingPage() {
             </p>
             <Button
               onClick={() => alert('プラン変更機能は現在開発中です（モック）')}
+              className="text-gray-700"
             >
               プランを変更
             </Button>
@@ -65,7 +66,7 @@ export default function BillingPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>支払い履歴</CardTitle>
+          <CardTitle className="text-gray-700">支払い履歴</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -76,7 +77,7 @@ export default function BillingPage() {
             ].map((payment, index) => (
               <div key={index} className="flex items-center justify-between border-b pb-3 last:border-0">
                 <div>
-                  <div className="font-medium">{payment.date}</div>
+                  <div className="font-medium text-gray-700">{payment.date}</div>
                   <div className="text-sm text-gray-700">{payment.amount}</div>
                 </div>
                 <Badge className="bg-green-500">{payment.status}</Badge>

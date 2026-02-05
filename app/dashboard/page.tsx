@@ -54,7 +54,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-700">Dashboard</h1>
           <p className="text-gray-800 mt-1">レビュー管理の概要</p>
         </div>
       </div>
@@ -63,28 +63,32 @@ export default function DashboardPage() {
         <StatsCard
           title="平均★評価"
           value={stats.averageRating.toFixed(2)}
-          change={0.3}
+          change={stats.changes?.averageRating}
           icon={Star}
-          trend="up"
+          trend={stats.changes?.averageRating && stats.changes.averageRating > 0 ? 'up' : stats.changes?.averageRating && stats.changes.averageRating < 0 ? 'down' : undefined}
           valueClassName="text-green-600"
         />
         <StatsCard
           title="レビュー総数"
           value={stats.totalReviews}
-          change={12}
+          change={stats.changes?.totalReviews}
           icon={MessageSquare}
-          trend="up"
+          trend={stats.changes?.totalReviews && stats.changes.totalReviews > 0 ? 'up' : stats.changes?.totalReviews && stats.changes.totalReviews < 0 ? 'down' : undefined}
         />
         <StatsCard
           title="ネガティブ率"
           value={`${stats.negativeRate.toFixed(1)}%`}
+          change={stats.changes?.negativeRate}
           icon={TrendingDown}
+          trend={stats.changes?.negativeRate && stats.changes.negativeRate > 0 ? 'up' : stats.changes?.negativeRate && stats.changes.negativeRate < 0 ? 'down' : undefined}
           valueClassName="text-red-600"
         />
         <StatsCard
           title="返信率"
           value={`${stats.replyRate.toFixed(1)}%`}
+          change={stats.changes?.replyRate}
           icon={Reply}
+          trend={stats.changes?.replyRate && stats.changes.replyRate > 0 ? 'up' : stats.changes?.replyRate && stats.changes.replyRate < 0 ? 'down' : undefined}
           valueClassName="text-blue-600"
         />
       </div>

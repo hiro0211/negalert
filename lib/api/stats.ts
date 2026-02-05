@@ -42,8 +42,32 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
         { rating: 5, count: 0 },
       ],
       negativeFactors: [],
+      changes: {
+        averageRating: 0,
+        totalReviews: 0,
+        negativeRate: 0,
+        replyRate: 0,
+      },
     };
   }
+  
+  // 今月と先月の期間を計算
+  const now = new Date();
+  const thisMonthStart = startOfMonth(now);
+  const lastMonthStart = startOfMonth(subMonths(now, 1));
+  const lastMonthEnd = endOfMonth(subMonths(now, 1));
+  
+  // 今月のレビュー
+  const thisMonthReviews = reviews.filter(r => {
+    const reviewDate = new Date(r.review_created_at);
+    return reviewDate >= thisMonthStart;
+  });
+  
+  // 先月のレビュー
+  const lastMonthReviews = reviews.filter(r => {
+    const reviewDate = new Date(r.review_created_at);
+    return reviewDate >= lastMonthStart && reviewDate <= lastMonthEnd;
+  });
   
   // 統計を計算
   const totalReviews = reviews.length;
@@ -52,6 +76,9 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
   const negativeRate = (negativeCount / totalReviews) * 100;
   const repliedCount = reviews.filter(r => r.status === 'replied' || r.status === 'auto_replied').length;
   const replyRate = (repliedCount / totalReviews) * 100;
+  
+  // 前月比を計算
+  const changes = calculateMonthlyChanges(thisMonthReviews, lastMonthReviews);
   
   // レビュー推移を計算（過去6ヶ月）
   const reviewGrowth = calculateReviewGrowth(reviews);
@@ -72,6 +99,7 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
     reviewGrowth,
     ratingDistribution,
     negativeFactors,
+    changes,
   };
 }
 
@@ -110,6 +138,55 @@ function calculateRatingDistribution(reviews: any[]): { rating: number; count: n
     rating,
     count: reviews.filter(r => r.rating === rating).length,
   }));
+}
+
+/**
+ * 前月比を計算
+ */
+function calculateMonthlyChanges(
+  thisMonthReviews: any[],
+  lastMonthReviews: any[]
+): {
+  averageRating?: number;
+  totalReviews?: number;
+  negativeRate?: number;
+  replyRate?: number;
+} {
+  // 先月のデータがない場合は前月比なし
+  if (lastMonthReviews.length === 0) {
+    return {
+      averageRating: undefined,
+      totalReviews: undefined,
+      negativeRate: undefined,
+      replyRate: undefined,
+    };
+  }
+  
+  // 今月の統計
+  const thisMonthTotal = thisMonthReviews.length;
+  const thisMonthAvgRating = thisMonthTotal > 0
+    ? thisMonthReviews.reduce((sum, r) => sum + r.rating, 0) / thisMonthTotal
+    : 0;
+  const thisMonthNegativeRate = thisMonthTotal > 0
+    ? (thisMonthReviews.filter(r => r.rating <= 3).length / thisMonthTotal) * 100
+    : 0;
+  const thisMonthReplyRate = thisMonthTotal > 0
+    ? (thisMonthReviews.filter(r => r.status === 'replied' || r.status === 'auto_replied').length / thisMonthTotal) * 100
+    : 0;
+  
+  // 先月の統計
+  const lastMonthTotal = lastMonthReviews.length;
+  const lastMonthAvgRating = lastMonthReviews.reduce((sum, r) => sum + r.rating, 0) / lastMonthTotal;
+  const lastMonthNegativeRate = (lastMonthReviews.filter(r => r.rating <= 3).length / lastMonthTotal) * 100;
+  const lastMonthReplyRate = (lastMonthReviews.filter(r => r.status === 'replied' || r.status === 'auto_replied').length / lastMonthTotal) * 100;
+  
+  // 差分を計算
+  return {
+    averageRating: Math.round((thisMonthAvgRating - lastMonthAvgRating) * 10) / 10,
+    totalReviews: thisMonthTotal - lastMonthTotal,
+    negativeRate: Math.round((thisMonthNegativeRate - lastMonthNegativeRate) * 10) / 10,
+    replyRate: Math.round((thisMonthReplyRate - lastMonthReplyRate) * 10) / 10,
+  };
 }
 
 /**

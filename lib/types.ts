@@ -24,6 +24,13 @@ export type DashboardStats = {
   reviewGrowth: { month: string; count: number }[];
   ratingDistribution: { rating: number; count: number }[];
   negativeFactors: { factor: string; count: number }[];
+  // 前月比データ
+  changes?: {
+    averageRating?: number;
+    totalReviews?: number;
+    negativeRate?: number;
+    replyRate?: number;
+  };
 };
 
 export type Todo = {
