@@ -112,9 +112,11 @@ export function calculateNegativeFactors(
   // カテゴリを集計
   const categoryCount = new Map<string, number>();
   negativeReviews.forEach(review => {
-    review.aiCategories.forEach(category => {
-      categoryCount.set(category, (categoryCount.get(category) || 0) + 1);
-    });
+    if (review.aiCategories) {
+      review.aiCategories.forEach(category => {
+        categoryCount.set(category, (categoryCount.get(category) || 0) + 1);
+      });
+    }
   });
   
   // 件数順にソートしてTOP Nを取得
@@ -195,9 +197,11 @@ export function calculateCategoryDistribution(
   const categoryCount = new Map<string, number>();
   
   reviews.forEach(review => {
-    review.aiCategories.forEach(category => {
-      categoryCount.set(category, (categoryCount.get(category) || 0) + 1);
-    });
+    if (review.aiCategories) {
+      review.aiCategories.forEach(category => {
+        categoryCount.set(category, (categoryCount.get(category) || 0) + 1);
+      });
+    }
   });
   
   return Array.from(categoryCount.entries())
