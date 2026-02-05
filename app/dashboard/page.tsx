@@ -5,6 +5,7 @@ import { ReviewGrowthChart } from '@/components/dashboard/review-growth-chart';
 import { RatingBreakdown } from '@/components/dashboard/rating-breakdown';
 import { NegativeFactors } from '@/components/dashboard/negative-factors';
 import { PriorityWidget } from '@/components/dashboard/priority-widget';
+import { AIReportCard } from '@/components/dashboard/ai-report-card';
 import { LoadingSpinner } from '@/components/common/loading-spinner';
 import { ErrorMessage } from '@/components/common/error-message';
 import { useDashboardStats } from '@/lib/hooks/useStats';
@@ -92,6 +93,8 @@ export default function DashboardPage() {
           valueClassName="text-blue-600"
         />
       </div>
+
+      <AIReportCard />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">

@@ -16,6 +16,17 @@ export interface AIAnalysisResult {
 }
 
 /**
+ * 週間レポート結果の型定義
+ */
+export interface WeeklyReportResult {
+  overallSentiment: 'positive' | 'neutral' | 'negative';
+  summary: string;
+  goodPoints: string[];
+  badPoints: string[];
+  actionPlan: string;
+}
+
+/**
  * OpenAI APIを使用してレビューを分析
  * 
  * @param reviewText - レビュー本文
@@ -134,6 +145,131 @@ ${reviewText}`;
       error instanceof Error 
         ? `AI分析に失敗しました: ${error.message}` 
         : 'AI分析に失敗しました'
+    );
+  }
+}
+
+/**
+ * 複数のレビューをまとめて分析し、週間レポートを生成
+ * 
+ * @param reviews - レビューリスト（直近7日間分を想定）
+ * @returns 週間レポート結果
+ */
+export async function generateReviewReport(
+  reviews: Array<{ text: string; rating: number; date: Date }>
+): Promise<WeeklyReportResult> {
+  // 環境変数チェック
+  const apiKey = process.env.OPENAI_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('OPENAI_API_KEYが設定されていません');
+  }
+  
+  // OpenAIクライアントの初期化
+  const openai = new OpenAI({
+    apiKey: apiKey,
+  });
+  
+  // システムプロンプトの構築
+  const systemPrompt = `あなたは店舗コンサルタントです。入力されたレビューリスト（直近1週間分）を読み、店舗オーナー向けの簡潔なレポートを作成してください。
+
+以下のJSON形式で結果を返してください：
+
+{
+  "overallSentiment": "positive | neutral | negative （全体的な評価傾向）",
+  "summary": "1週間の総評（100文字程度）",
+  "goodPoints": ["良かった点1", "良かった点2", ...],
+  "badPoints": ["改善点1", "改善点2", ...],
+  "actionPlan": "来週に向けた具体的なアクション（1つ）"
+}
+
+ガイドライン:
+- overallSentiment: 平均評価が4以上ならpositive、3以上ならneutral、それ以下ならnegative
+- summary: 全体的な傾向を簡潔にまとめる
+- goodPoints: 顧客から評価された点を2-3個抽出（配列）
+- badPoints: 改善が必要な点を2-3個抽出（配列）。なければ空配列
+- actionPlan: 具体的で実行可能なアクションを1つ提案`;
+
+  // レビューリストを整形
+  const reviewsText = reviews.map((r, idx) => 
+    `${idx + 1}. [★${r.rating}] ${r.text}`
+  ).join('\n\n');
+  
+  const userPrompt = `以下は直近1週間のレビューです（全${reviews.length}件）：
+
+${reviewsText}`;
+
+  try {
+    console.log('🤖 週間レポート生成開始:', { reviewCount: reviews.length });
+    
+    // OpenAI APIを呼び出し
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0.7,
+      max_tokens: 1500,
+    });
+    
+    // レスポンスの取得
+    const responseContent = completion.choices[0]?.message?.content;
+    
+    if (!responseContent) {
+      throw new Error('OpenAI APIからのレスポンスが空です');
+    }
+    
+    console.log('✅ 週間レポート生成成功');
+    
+    // JSONをパース
+    let result: WeeklyReportResult;
+    try {
+      const parsed = JSON.parse(responseContent);
+      
+      // 型の検証とデフォルト値の設定
+      result = {
+        overallSentiment: ['positive', 'neutral', 'negative'].includes(parsed.overallSentiment) 
+          ? parsed.overallSentiment 
+          : 'neutral',
+        summary: String(parsed.summary || 'レポートを生成できませんでした'),
+        goodPoints: Array.isArray(parsed.goodPoints) ? parsed.goodPoints : [],
+        badPoints: Array.isArray(parsed.badPoints) ? parsed.badPoints : [],
+        actionPlan: String(parsed.actionPlan || '引き続き顧客満足度の向上に努めましょう'),
+      };
+    } catch (parseError) {
+      console.error('JSON パースエラー:', parseError);
+      throw new Error('週間レポートのパースに失敗しました');
+    }
+    
+    console.log('📊 週間レポート結果:', {
+      sentiment: result.overallSentiment,
+      goodPointsCount: result.goodPoints.length,
+      badPointsCount: result.badPoints.length,
+    });
+    
+    return result;
+    
+  } catch (error) {
+    console.error('❌ 週間レポート生成エラー:', error);
+    
+    // エラーの種類に応じた処理
+    if (error instanceof OpenAI.APIError) {
+      if (error.status === 401) {
+        throw new Error('OpenAI APIキーが無効です');
+      } else if (error.status === 429) {
+        throw new Error('OpenAI APIのレート制限に達しました。しばらく待ってから再度お試しください');
+      } else if (error.status === 500) {
+        throw new Error('OpenAI APIでエラーが発生しました');
+      }
+    }
+    
+    // その他のエラー
+    throw new Error(
+      error instanceof Error 
+        ? `週間レポート生成に失敗しました: ${error.message}` 
+        : '週間レポート生成に失敗しました'
     );
   }
 }
