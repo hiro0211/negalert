@@ -96,7 +96,8 @@ export default function DashboardPage() {
 
       <AIReportCard />
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      {/* TODO機能を一時的に非表示 */}
+      {/* <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <ReviewGrowthChart data={stats.reviewGrowth} />
         </div>
@@ -104,7 +105,9 @@ export default function DashboardPage() {
           unrepliedNegativeCount={unrepliedNegative}
           pendingTodosCount={pendingTodos}
         />
-      </div>
+      </div> */}
+
+      <ReviewGrowthChart data={stats.reviewGrowth} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <RatingBreakdown data={stats.ratingDistribution} />
