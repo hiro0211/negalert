@@ -29,9 +29,16 @@ export interface SaveTokenParams {
  * 既存のレコードがあればUPSERT（更新）、なければINSERT
  * 
  * 重要: Refresh Tokenがnull/undefinedの場合は既存の値を保持する
+ * トークンはpgcryptoで暗号化して保存される
  */
 export async function saveGoogleToken(params: SaveTokenParams): Promise<void> {
   const { supabase, userId, accessToken, refreshToken, expiresAt } = params;
+  
+  // 暗号化キーの確認
+  const encryptionKey = process.env.DB_ENCRYPTION_KEY;
+  if (!encryptionKey) {
+    throw new Error('DB_ENCRYPTION_KEY環境変数が設定されていません');
+  }
   
   // expires_atをISO文字列に変換
   const expiresAtTimestamp = expiresAt 
@@ -42,36 +49,29 @@ export async function saveGoogleToken(params: SaveTokenParams): Promise<void> {
   let finalRefreshToken = refreshToken;
   
   if (!refreshToken) {
-    // 既存のTokenレコードを取得
-    const { data: existingToken } = await supabase
-      .from('oauth_tokens')
-      .select('refresh_token')
-      .eq('user_id', userId)
-      .eq('provider', 'google')
-      .single();
+    // 既存のTokenレコードを取得（復号化して取得）
+    const { data: existingToken } = await supabase.rpc('get_decrypted_refresh_token', {
+      p_user_id: userId,
+      p_provider: 'google',
+      p_encryption_key: encryptionKey
+    });
     
     // 既存のRefresh Tokenがあればそれを使用
-    if (existingToken?.refresh_token) {
-      finalRefreshToken = existingToken.refresh_token;
+    if (existingToken) {
+      finalRefreshToken = existingToken;
       console.log('ℹ️ 既存のRefresh Tokenを保持します');
     }
   }
   
-  const { error } = await supabase
-    .from('oauth_tokens')
-    .upsert(
-      {
-        user_id: userId,
-        provider: 'google',
-        access_token: accessToken,
-        refresh_token: finalRefreshToken || null,
-        expires_at: expiresAtTimestamp,
-        updated_at: new Date().toISOString(),
-      },
-      {
-        onConflict: 'user_id,provider', // user_idとproviderの組み合わせで重複チェック
-      }
-    );
+  // 暗号化してUPSERT（生SQLを使用）
+  const { error } = await supabase.rpc('upsert_encrypted_token', {
+    p_user_id: userId,
+    p_provider: 'google',
+    p_access_token: accessToken,
+    p_refresh_token: finalRefreshToken || null,
+    p_expires_at: expiresAtTimestamp,
+    p_encryption_key: encryptionKey
+  });
   
   if (error) {
     console.error('Token保存エラー:', error);
@@ -88,6 +88,7 @@ export async function saveGoogleToken(params: SaveTokenParams): Promise<void> {
 
 /**
  * ユーザーのGoogle OAuth Tokenを取得
+ * トークンはpgcryptoで復号化して返される
  * 
  * @param userId - ユーザーID
  * @param supabase - Supabaseクライアント（オプション、指定しない場合は新規作成）
@@ -98,15 +99,21 @@ export async function getGoogleToken(
 ): Promise<UserToken | null> {
   const client = supabase || await createServerClient();
   
-  const { data, error } = await client
-    .from('oauth_tokens')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('provider', 'google')
-    .single();
+  // 暗号化キーの確認
+  const encryptionKey = process.env.DB_ENCRYPTION_KEY;
+  if (!encryptionKey) {
+    throw new Error('DB_ENCRYPTION_KEY環境変数が設定されていません');
+  }
+  
+  // 復号化してトークンを取得（生SQLを使用）
+  const { data, error } = await client.rpc('get_decrypted_token', {
+    p_user_id: userId,
+    p_provider: 'google',
+    p_encryption_key: encryptionKey
+  });
   
   if (error) {
-    if (error.code === 'PGRST116') {
+    if (error.code === 'PGRST116' || error.message?.includes('not found')) {
       // レコードが見つからない場合
       return null;
     }
@@ -114,7 +121,10 @@ export async function getGoogleToken(
     throw new Error('Tokenの取得に失敗しました');
   }
   
-  return data;
+  // データが配列で返される場合と単一レコードで返される場合に対応
+  const tokenData = Array.isArray(data) ? data[0] : data;
+  
+  return tokenData || null;
 }
 
 /**
