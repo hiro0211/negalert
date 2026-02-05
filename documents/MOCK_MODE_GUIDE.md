@@ -26,6 +26,9 @@ AI機能をテストするために、モックデータで動作させること
 ```bash
 # モックデータモードを有効化
 NEXT_PUBLIC_USE_MOCK_DATA=true
+
+# Google Places API キー（実店舗データをインポートする場合）
+GOOGLE_PLACES_API_KEY=your_api_key_here
 ```
 
 **既に追加されています！**
@@ -39,12 +42,38 @@ NEXT_PUBLIC_USE_MOCK_DATA=true
 npm run dev
 ```
 
-### ステップ3: ブラウザでアクセス
+### ステップ3: テストデータの準備（2つの方法）
+
+モックモードでは、2つの方法でテストデータを用意できます：
+
+#### 方法A: 実店舗のレビューをインポート（推奨）
+
+1. http://localhost:3000/dashboard/settings にアクセス
+2. **「テストデータ」タブ**を開く（モックモード時のみ表示）
+3. Google Place IDを入力
+   - 例: `ChIJR4fczVeLGGARWVp2HGalka0` (スターバックス渋谷店)
+4. 「レビューをインポート」ボタンをクリック
+5. インポート成功後、「ダッシュボードで確認」または「Inboxで確認」をクリック
+
+**Place IDの探し方:**
+- [Google Place ID Finder](https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder) にアクセス
+- 店舗名や住所で検索してPlace IDをコピー
+
+**メリット:**
+- 実際の店舗レビューでテストできる
+- 統計データやAI分析の精度を確認できる
+- 様々な評価や長さのレビューで動作確認が可能
+
+#### 方法B: デフォルトのモックデータを使用
 
 1. http://localhost:3000/dashboard/inbox にアクセス
 2. モックデータのレビュー一覧が表示されます（15件）
 3. 任意のレビューの「詳細」ボタンをクリック
 4. レビュー詳細画面が表示されます
+
+**メリット:**
+- すぐにテストを開始できる
+- AI分析結果が事前に含まれている
 
 ### ステップ4: AI分析をテスト
 
@@ -87,18 +116,20 @@ npm run dev
 
 ### 何が動作するか
 
-- ✅ レビュー一覧の表示
+- ✅ レビュー一覧の表示（Supabaseから取得）
 - ✅ レビュー詳細の表示
 - ✅ フィルタリング（未返信、ネガティブ、高リスク）
 - ✅ AI分析の実行（OpenAI API呼び出し）
 - ✅ AI分析結果の表示
+- ✅ **実店舗のレビューデータのインポート（新機能）**
+- ✅ **ダッシュボードの統計表示（インポートデータ基準）**
+- ✅ **週間レポートの生成（インポートデータ基準）**
 
 ### 何が動作しないか
 
-- ❌ Supabaseへのデータ保存
-- ❌ レビューの編集・削除
-- ❌ 返信の投稿
-- ❌ データの永続化（リロードで元に戻る）
+- ❌ Google Business Profile APIからのレビュー同期
+- ❌ レビューへの返信投稿（Google APIへの送信）
+- ❌ 本番環境へのデプロイ時の動作
 
 ### サーバーログの確認
 
@@ -203,21 +234,44 @@ npm run dev
 3. APIキーが有効であることを確認
 4. 開発サーバーを再起動
 
-### ログに「MOCK MODE」が表示されない
+### 「テストデータ」タブが表示されない
 
-**原因**: 環境変数が `true` ではない
+**原因**: モックモードが無効になっている
 
 **解決方法**:
-1. `.env.local` で `NEXT_PUBLIC_USE_MOCK_DATA=true` が正確に記述されているか確認
-2. スペルミス、余分なスペースがないか確認
-3. 開発サーバーを再起動
+1. `.env.local` で `NEXT_PUBLIC_USE_MOCK_DATA=true` が設定されているか確認
+2. 開発サーバーを再起動
+3. ブラウザをリロード（Ctrl + Shift + R）
 
-### ページをリロードすると分析結果が消える
+### Place IDインポートで「NOT_FOUND」エラー
 
-**正常な動作です**:
-- モックモードでは、AI分析結果はDBに保存されません
-- リロードすると、元のモックデータに戻ります
-- これはテスト用の仕様です
+**原因**: Place IDが無効、またはAPIキーが未設定
+
+**解決方法**:
+1. Place IDが正しいか確認（`ChIJ...` で始まる文字列）
+2. [Google Place ID Finder](https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder) で正しいPlace IDを取得
+3. `.env.local` に `GOOGLE_PLACES_API_KEY` が設定されているか確認
+4. Google Cloud ConsoleでPlaces APIが有効になっているか確認
+
+### Place IDインポートで「No workspace found」エラー
+
+**原因**: ワークスペースが作成されていない
+
+**解決方法**:
+1. Supabaseの `workspaces` テーブルを確認
+2. 手動でワークスペースを作成:
+   ```sql
+   INSERT INTO workspaces (user_id, name, google_location_id)
+   VALUES ('your-user-id', 'テスト店舗', 'test-location-001');
+   ```
+3. 再度インポートを実行
+
+### インポートしたレビューが表示されない
+
+**解決方法**:
+1. ブラウザを完全リロード（Ctrl + Shift + R）
+2. `/dashboard/inbox` に直接アクセス
+3. サーバーログを確認（レビュー取得のログが出ているか）
 
 ---
 
@@ -259,14 +313,26 @@ npm run dev
 
 ## ✅ チェックリスト
 
-モックモードを使う前に、以下を確認してください：
+### 基本セットアップ
 
 - [ ] `.env.local` に `NEXT_PUBLIC_USE_MOCK_DATA=true` が記述されている
 - [ ] `.env.local` に `OPENAI_API_KEY=sk-...` が記述されている
 - [ ] 開発サーバーを再起動した
+
+### 実店舗データインポート（推奨）
+
+- [ ] `.env.local` に `GOOGLE_PLACES_API_KEY` が設定されている
+- [ ] Supabaseに `workspaces` テーブルのレコードが存在する
+- [ ] 設定ページの「テストデータ」タブが表示される
+- [ ] Place IDを入力してインポートが成功した
+- [ ] ダッシュボードで統計データが表示される
+- [ ] Inboxでインポートしたレビューが表示される
+
+### デフォルトモックデータ使用
+
 - [ ] ブラウザで http://localhost:3000/dashboard/inbox にアクセスできる
-- [ ] レビュー一覧に15件のモックレビューが表示される
-- [ ] サーバーログに「🎭 [MOCK MODE]」が表示される
+- [ ] レビュー一覧にモックレビューが表示される
+- [ ] AI分析が実行できる
 
 ---
 
@@ -275,8 +341,18 @@ npm run dev
 モックデータモードを使うことで：
 
 ✅ **実データに影響を与えずに**AI機能をテストできる  
-✅ **15件の多様なレビュー**で様々なシナリオを確認できる  
+✅ **実店舗のレビューデータ**で実践的なテストができる（新機能）  
+✅ **ダッシュボード統計**や**週間レポート**の動作を確認できる  
 ✅ **OpenAI APIの実際の動作**を確認できる  
 ✅ **簡単に元に戻せる**（環境変数を変更するだけ）
+
+### 推奨テストフロー
+
+1. モックモードを有効化（`NEXT_PUBLIC_USE_MOCK_DATA=true`）
+2. 設定ページで実店舗のPlace IDをインポート
+3. ダッシュボードで統計情報を確認
+4. Inboxでレビュー一覧を確認
+5. AI分析・週間レポート機能をテスト
+6. テスト完了後、`NEXT_PUBLIC_USE_MOCK_DATA=false` に戻す
 
 テストが終わったら、必ず `.env.local` で `NEXT_PUBLIC_USE_MOCK_DATA=false` に戻してください！

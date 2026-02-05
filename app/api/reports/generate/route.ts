@@ -7,7 +7,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { generateReviewReport, WeeklyReportResult } from '@/lib/services/ai';
-import { mockReviews } from '@/lib/mock/reviews';
 
 /**
  * モックデータモードかどうかを判定
@@ -52,8 +51,8 @@ export async function POST() {
     console.log('📊 週間レポート生成を開始:', { userId: user.id, mockMode: USE_MOCK_DATA });
     
     // 2. 期間計算（現在時刻から7日前）
-    const endDate = new Date();
-    const startDate = new Date();
+    let endDate = new Date();
+    let startDate = new Date();
     startDate.setDate(startDate.getDate() - 7);
     
     console.log('📅 集計期間:', {
@@ -61,61 +60,47 @@ export async function POST() {
       endDate: endDate.toISOString(),
     });
     
-    // 3. レビューデータを取得
-    let reviews: Array<{
-      id: string;
-      comment: string;
-      rating: number;
-      review_created_at: string;
-      author_name: string;
-    }> = [];
+    // 3. DBからレビューを取得
+    let query = supabase
+      .from('reviews')
+      .select('id, comment, rating, review_created_at, author_name');
     
-    if (USE_MOCK_DATA) {
-      // モックモード: モックデータから最新10件を取得（期間フィルタリングなし）
-      console.log('🎭 [MOCK MODE] モックデータから最新10件を取得');
-      reviews = mockReviews
-        .slice(0, 10) // 最新10件を取得
-        .map(r => ({
-          id: r.id,
-          comment: r.text,
-          rating: r.rating,
-          review_created_at: r.date.toISOString(),
-          author_name: r.authorName,
-        }));
-      
-      // モックモードでは期間を実際のモックデータの範囲に合わせる
-      if (reviews.length > 0) {
-        const dates = reviews.map(r => new Date(r.review_created_at));
-        startDate.setTime(Math.min(...dates.map(d => d.getTime())));
-        endDate.setTime(Math.max(...dates.map(d => d.getTime())));
-      }
-    } else {
-      // 通常モード: DBから直近7日間のレビューを取得
-      const { data, error } = await supabase
-        .from('reviews')
-        .select('id, comment, rating, review_created_at, author_name')
-        .gte('review_created_at', startDate.toISOString())
-        .order('review_created_at', { ascending: false })
-        .limit(50); // トークン制限対策
-      
-      if (error) {
-        console.error('レビュー取得エラー:', error);
-        return NextResponse.json(
-          {
-            success: false,
-            error: `レビューの取得に失敗しました: ${error.message}`,
-          } as GenerateReportResponse,
-          { status: 500 }
-        );
-      }
-      
-      reviews = data || [];
+    // モックモード時は期間フィルタリングせず、最新50件を取得
+    if (!USE_MOCK_DATA) {
+      query = query.gte('review_created_at', startDate.toISOString());
     }
     
-    console.log('📝 取得したレビュー数:', reviews.length);
+    const { data: reviews, error } = await query
+      .order('review_created_at', { ascending: false })
+      .limit(50); // トークン制限対策
+    
+    if (error) {
+      console.error('レビュー取得エラー:', error);
+      return NextResponse.json(
+        {
+          success: false,
+          error: `レビューの取得に失敗しました: ${error.message}`,
+        } as GenerateReportResponse,
+        { status: 500 }
+      );
+    }
+    
+    const reviewList = reviews || [];
+    console.log('📝 取得したレビュー数:', reviewList.length);
+    
+    // モックモード時は実際のレビュー日付範囲を集計期間とする
+    if (USE_MOCK_DATA && reviewList.length > 0) {
+      const dates = reviewList.map(r => new Date(r.review_created_at));
+      startDate = new Date(Math.min(...dates.map(d => d.getTime())));
+      endDate = new Date(Math.max(...dates.map(d => d.getTime())));
+      console.log('🎭 [MOCK MODE] 実際のレビュー期間に調整:', {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+      });
+    }
     
     // 4. 分岐処理: レビューが0件の場合
-    if (reviews.length === 0) {
+    if (reviewList.length === 0) {
       console.log('ℹ️ レビューが0件のため、空のレポートを返します');
       return NextResponse.json(
         {
@@ -141,7 +126,7 @@ export async function POST() {
     let reportResult: WeeklyReportResult;
     try {
       // レビューデータを整形してAI関数に渡す
-      const reviewsForAI = reviews.map(r => ({
+      const reviewsForAI = reviewList.map(r => ({
         text: r.comment || '',
         rating: r.rating,
         date: new Date(r.review_created_at),
@@ -173,7 +158,7 @@ export async function POST() {
           startDate: startDate.toISOString(),
           endDate: endDate.toISOString(),
         },
-        reviewCount: reviews.length,
+        reviewCount: reviewList.length,
       } as GenerateReportResponse,
       { status: 200 }
     );

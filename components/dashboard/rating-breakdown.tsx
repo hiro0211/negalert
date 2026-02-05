@@ -10,10 +10,13 @@ interface RatingBreakdownProps {
 const COLORS = ['#22c55e', '#84cc16', '#facc15', '#fb923c', '#ef4444'];
 
 export function RatingBreakdown({ data }: RatingBreakdownProps) {
-  const chartData = data.map((item) => ({
-    name: `★${item.rating}`,
-    value: item.count,
-  }));
+  // 0件のレビューを除外
+  const chartData = data
+    .filter((item) => item.count > 0)
+    .map((item) => ({
+      name: `★${item.rating}`,
+      value: item.count,
+    }));
 
   return (
     <Card>
@@ -31,13 +34,14 @@ export function RatingBreakdown({ data }: RatingBreakdownProps) {
               outerRadius={100}
               paddingAngle={2}
               dataKey="value"
-              label={({ name, value }) => `${name}: ${value}`}
+              label={({ name }) => name}
             >
               {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
             <Tooltip 
+              formatter={(value, name) => [`${value || 0}件のレビュー`, name || '']}
               contentStyle={{
                 backgroundColor: '#fff',
                 border: '1px solid #e5e7eb',

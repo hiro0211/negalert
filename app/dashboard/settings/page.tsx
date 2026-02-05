@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
@@ -11,9 +12,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Trash2, Plus } from 'lucide-react';
+import { Trash2, Plus, Download, ExternalLink, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function SettingsPage() {
+  const router = useRouter();
+  const isMockMode = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+  
   const [ratingThreshold, setRatingThreshold] = useState([3]);
   const [dangerWords, setDangerWords] = useState([
     { id: '1', word: '最悪', addedDate: '2024/05/01' },
@@ -21,6 +26,15 @@ export default function SettingsPage() {
     { id: '3', word: '態度が悪い', addedDate: '2024/05/03' },
   ]);
   const [newWord, setNewWord] = useState('');
+  
+  // テストデータインポート用の状態
+  const [placeId, setPlaceId] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
+  const [importStatus, setImportStatus] = useState<{
+    type: 'success' | 'error' | null;
+    message: string;
+    count?: number;
+  }>({ type: null, message: '' });
 
   const handleAddWord = () => {
     if (newWord.trim()) {
@@ -40,6 +54,52 @@ export default function SettingsPage() {
     setDangerWords(dangerWords.filter((w) => w.id !== id));
   };
 
+  const handleImportReviews = async () => {
+    if (!placeId.trim()) {
+      setImportStatus({
+        type: 'error',
+        message: 'Place IDを入力してください',
+      });
+      return;
+    }
+
+    setIsImporting(true);
+    setImportStatus({ type: null, message: '' });
+
+    try {
+      const response = await fetch('/api/debug/import-place-reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ placeId: placeId.trim() }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setImportStatus({
+          type: 'success',
+          message: `${data.importedCount}件のレビューをインポートしました`,
+          count: data.importedCount,
+        });
+        setPlaceId('');
+      } else {
+        setImportStatus({
+          type: 'error',
+          message: data.error || 'インポートに失敗しました',
+        });
+      }
+    } catch (error) {
+      setImportStatus({
+        type: 'error',
+        message: 'エラーが発生しました: ' + (error instanceof Error ? error.message : String(error)),
+      });
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -48,10 +108,13 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="notification" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className={`grid w-full ${isMockMode ? 'grid-cols-4' : 'grid-cols-3'}`}>
           <TabsTrigger value="notification" className="text-gray-700">通知</TabsTrigger>
           <TabsTrigger value="reply" className="text-gray-700">返信設定</TabsTrigger>
           <TabsTrigger value="danger-words" className="text-gray-700">危険語辞書</TabsTrigger>
+          {isMockMode && (
+            <TabsTrigger value="test-data" className="text-gray-700">テストデータ</TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="notification">
@@ -190,6 +253,119 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {isMockMode && (
+          <TabsContent value="test-data">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-gray-700">テストデータのインポート</CardTitle>
+                <CardDescription className="text-gray-600">
+                  Google Places APIから実店舗のレビューデータを取得してテストできます
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="text-gray-700">
+                    モックモードが有効です。このタブはテスト用のデータインポート機能を提供します。
+                  </AlertDescription>
+                </Alert>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="placeId" className="text-gray-700">Place ID</Label>
+                    <Input
+                      id="placeId"
+                      placeholder="ChIJ... で始まるPlace IDを入力"
+                      value={placeId}
+                      onChange={(e) => setPlaceId(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleImportReviews()}
+                      disabled={isImporting}
+                      className="text-gray-700"
+                    />
+                    <p className="text-sm text-gray-600">
+                      例: ChIJR4fczVeLGGARWVp2HGalka0 (スターバックス渋谷店)
+                    </p>
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                    <p className="text-sm font-medium text-gray-700">Place IDの探し方</p>
+                    <p className="text-sm text-gray-600">
+                      1. Google Place ID Finderにアクセス
+                    </p>
+                    <a
+                      href="https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                      Place ID Finderを開く
+                    </a>
+                    <p className="text-sm text-gray-600">
+                      2. 店舗名や住所で検索してPlace IDをコピー
+                    </p>
+                  </div>
+
+                  <Button
+                    onClick={handleImportReviews}
+                    disabled={isImporting || !placeId.trim()}
+                    className="w-full"
+                  >
+                    {isImporting ? (
+                      <>
+                        <Download className="h-4 w-4 mr-2 animate-spin" />
+                        インポート中...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4 mr-2" />
+                        レビューをインポート
+                      </>
+                    )}
+                  </Button>
+
+                  {importStatus.type === 'success' && (
+                    <Alert className="border-green-200 bg-green-50">
+                      <CheckCircle2 className="h-4 w-4 text-green-600" />
+                      <AlertDescription className="text-green-800">
+                        {importStatus.message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {importStatus.type === 'error' && (
+                    <Alert className="border-red-200 bg-red-50">
+                      <AlertCircle className="h-4 w-4 text-red-600" />
+                      <AlertDescription className="text-red-800">
+                        {importStatus.message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {importStatus.type === 'success' && (
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => router.push('/dashboard')}
+                        className="flex-1"
+                      >
+                        ダッシュボードで確認
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => router.push('/dashboard/inbox')}
+                        className="flex-1"
+                      >
+                        Inboxで確認
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
