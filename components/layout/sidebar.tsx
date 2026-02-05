@@ -27,11 +27,12 @@ const navItems = [
     href: '/dashboard/settings',
     icon: Settings,
   },
-  {
-    title: '料金',
-    href: '/dashboard/billing',
-    icon: CreditCard,
-  },
+  // 料金機能を一時的に非表示
+  // {
+  //   title: '料金',
+  //   href: '/dashboard/billing',
+  //   icon: CreditCard,
+  // },
 ];
 
 export function Sidebar() {
