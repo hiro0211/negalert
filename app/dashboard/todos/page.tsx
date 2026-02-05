@@ -72,13 +72,13 @@ export default function TodosPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">ToDo管理</h1>
+          <h1 className="text-3xl font-bold text-gray-700">ToDo管理</h1>
           <p className="text-gray-700 mt-1">レビューから生成されたタスク</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
+            <Button className="text-gray-700">
+              <Plus className="mr-2 h-4 w-4 text-gray-700" />
               新規追加
             </Button>
           </DialogTrigger>

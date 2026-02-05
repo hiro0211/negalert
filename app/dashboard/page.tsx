@@ -9,7 +9,8 @@ import { LoadingSpinner } from '@/components/common/loading-spinner';
 import { ErrorMessage } from '@/components/common/error-message';
 import { useDashboardStats } from '@/lib/hooks/useStats';
 import { useReviews } from '@/lib/hooks/useReviews';
-import { useTodos } from '@/lib/hooks/useTodos';
+// TODO機能を一時的に非表示
+// import { useTodos } from '@/lib/hooks/useTodos';
 import { countUnrepliedNegativeReviews } from '@/lib/services/review-stats';
 import { Star, MessageSquare, TrendingDown, Reply } from 'lucide-react';
 import { useMemo } from 'react';
@@ -18,20 +19,24 @@ export default function DashboardPage() {
   // カスタムフックでデータを取得
   const { stats, loading: statsLoading, error: statsError, refetch: refetchStats } = useDashboardStats();
   const { reviews, loading: reviewsLoading } = useReviews();
-  const { todos, loading: todosLoading } = useTodos();
+  // TODO機能を一時的に非表示
+  // const { todos, loading: todosLoading } = useTodos();
 
   // 統計情報を計算
   const unrepliedNegative = useMemo(
     () => countUnrepliedNegativeReviews(reviews),
     [reviews]
   );
-  const pendingTodos = useMemo(
-    () => todos.filter(t => !t.completed).length,
-    [todos]
-  );
+  // TODO機能を一時的に非表示
+  // const pendingTodos = useMemo(
+  //   () => todos.filter(t => !t.completed).length,
+  //   [todos]
+  // );
+  const pendingTodos = 0; // TODO機能を一時的に非表示のため0を設定
 
   // ローディング状態
-  if (statsLoading || reviewsLoading || todosLoading) {
+  // TODO機能を一時的に非表示のため todosLoading を削除
+  if (statsLoading || reviewsLoading) {
     return <LoadingSpinner text="ダッシュボードを読み込んでいます..." />;
   }
 

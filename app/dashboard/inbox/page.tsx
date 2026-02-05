@@ -47,7 +47,7 @@ export default function InboxPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Review Inbox</h1>
+        <h1 className="text-3xl font-bold text-gray-700">Review Inbox</h1>
         <p className="text-gray-800 mt-1">すべてのレビューを一元管理</p>
       </div>
 

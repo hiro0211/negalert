@@ -26,14 +26,15 @@ export function PriorityWidget({ unrepliedNegativeCount, pendingTodosCount }: Pr
               <Badge variant="destructive" className="bg-yellow-100 text-yellow-800">{unrepliedNegativeCount}件</Badge>
             </div>
           </div>
-          <div className="flex items-center justify-between">
+          {/* TODO機能を一時的に非表示 */}
+          {/* <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-gray-700">要対応ToDo</span>
               <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
                 {pendingTodosCount}件
               </Badge>
             </div>
-          </div>
+          </div> */}
         </div>
         <div className="flex gap-2">
           <Button asChild className="flex-1">
@@ -42,12 +43,13 @@ export function PriorityWidget({ unrepliedNegativeCount, pendingTodosCount }: Pr
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
-          <Button asChild variant="outline" className="flex-1">
+          {/* TODO機能を一時的に非表示 */}
+          {/* <Button asChild variant="outline" className="flex-1">
             <Link href="/dashboard/todos">
               <CheckSquare className="mr-2 h-4 w-4" />
               ToDo
             </Link>
-          </Button>
+          </Button> */}
         </div>
       </CardContent>
     </Card>

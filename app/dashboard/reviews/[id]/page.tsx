@@ -4,7 +4,8 @@ import { use } from 'react';
 import { ReviewDetail } from '@/components/reviews/review-detail';
 import { AIPanel } from '@/components/reviews/ai-panel';
 import { ReplyEditor } from '@/components/reviews/reply-editor';
-import { TodoGenerator } from '@/components/reviews/todo-generator';
+// TODO機能を一時的に非表示
+// import { TodoGenerator } from '@/components/reviews/todo-generator';
 import { NotificationLog } from '@/components/reviews/notification-log';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/common/loading-spinner';
@@ -107,7 +108,8 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
 
         <div className="space-y-6">
           <AIPanel review={review} onAnalysisComplete={handleAnalysisComplete} />
-          <TodoGenerator review={review} />
+          {/* TODO機能を一時的に非表示 */}
+          {/* <TodoGenerator review={review} /> */}
           <NotificationLog />
         </div>
       </div>

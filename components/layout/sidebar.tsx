@@ -16,11 +16,12 @@ const navItems = [
     href: '/dashboard/inbox',
     icon: Mail,
   },
-  {
-    title: 'ToDo',
-    href: '/dashboard/todos',
-    icon: CheckSquare,
-  },
+  // TODO機能を一時的に非表示
+  // {
+  //   title: 'ToDo',
+  //   href: '/dashboard/todos',
+  //   icon: CheckSquare,
+  // },
   {
     title: '設定',
     href: '/dashboard/settings',
