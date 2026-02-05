@@ -43,6 +43,8 @@ interface ImportPlaceReviewsResponse {
   success: boolean;
   importedCount?: number;
   reviews?: any[];
+  workspaceCreated?: boolean;  // ワークスペースが自動作成されたか
+  workspaceName?: string;       // 作成されたワークスペース名
   error?: string;
 }
 
@@ -82,18 +84,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. ワークスペース取得
+    // 4. ワークスペース取得または自動作成
     const workspaces = await getWorkspaces(user.id, supabase);
     
-    if (workspaces.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'ワークスペースが見つかりません' } as ImportPlaceReviewsResponse,
-        { status: 404 }
-      );
-    }
+    let workspaceId: string;
+    let workspaceCreated = false;
 
-    const workspaceId = workspaces[0].id;
-    console.log('📍 ワークスペースID:', workspaceId);
+    if (workspaces.length === 0) {
+      // モックモード専用: デフォルトワークスペースを自動作成
+      console.log('🏪 ワークスペースが存在しないため、自動作成します');
+      
+      const { data: newWorkspace, error: createError } = await supabase
+        .from('workspaces')
+        .insert({
+          user_id: user.id,
+          google_location_id: `mock-location-${Date.now()}`,
+          name: 'モック店舗（自動作成）',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (createError || !newWorkspace) {
+        console.error('ワークスペース作成エラー:', createError);
+        return NextResponse.json(
+          { success: false, error: `ワークスペースの作成に失敗しました: ${createError?.message}` } as ImportPlaceReviewsResponse,
+          { status: 500 }
+        );
+      }
+
+      workspaceId = newWorkspace.id;
+      workspaceCreated = true;
+      console.log('✅ モック用ワークスペースを自動作成:', workspaceId);
+    } else {
+      workspaceId = workspaces[0].id;
+      console.log('📍 既存のワークスペースを使用:', workspaceId);
+    }
 
     // 5. Google Places API呼び出し
     const apiKey = process.env.GOOGLE_PLACES_API_KEY;
@@ -175,6 +202,8 @@ export async function POST(request: NextRequest) {
       success: true,
       importedCount,
       reviews: savedReviews,
+      workspaceCreated,
+      workspaceName: workspaceCreated ? 'モック店舗（自動作成）' : undefined,
     } as ImportPlaceReviewsResponse);
 
   } catch (error) {

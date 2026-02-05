@@ -78,9 +78,13 @@ export default function SettingsPage() {
       const data = await response.json();
 
       if (data.success) {
+        let message = `${data.importedCount}件のレビューをインポートしました`;
+        if (data.workspaceCreated) {
+          message += '\n※ モック用ワークスペースを自動作成しました';
+        }
         setImportStatus({
           type: 'success',
-          message: `${data.importedCount}件のレビューをインポートしました`,
+          message,
           count: data.importedCount,
         });
         setPlaceId('');
