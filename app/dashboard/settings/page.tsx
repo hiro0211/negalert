@@ -314,7 +314,7 @@ export default function SettingsPage() {
                   <Button
                     onClick={handleImportReviews}
                     disabled={isImporting || !placeId.trim()}
-                    className="w-full"
+                    className="w-full text-gray-900"
                   >
                     {isImporting ? (
                       <>
@@ -323,7 +323,7 @@ export default function SettingsPage() {
                       </>
                     ) : (
                       <>
-                        <Download className="h-4 w-4 mr-2" />
+                        <Download className="h-4 w-4 mr-2 text-gray-700" />
                         レビューをインポート
                       </>
                     )}

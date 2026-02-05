@@ -115,13 +115,13 @@ export function ReviewTable({ reviews }: ReviewTableProps) {
         </Table>
       </div>
 
-      <div className="mt-4 flex items-center justify-between text-sm text-gray-800">
+      <div className="mt-4 flex items-center justify-between text-sm ">
         <div>Showing 1-{reviews.length} of {reviews.length} results</div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" disabled>
+          <Button variant="outline" size="sm" disabled className="text-white">
             前へ
           </Button>
-          <Button variant="outline" size="sm" disabled>
+          <Button variant="outline" size="sm" disabled className="text-white">
             次へ
           </Button>
         </div>
