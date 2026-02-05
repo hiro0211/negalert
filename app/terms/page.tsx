@@ -37,7 +37,7 @@ export default function TermsPage() {
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li><strong>「本サービス」</strong>: NegAlert for Google Reviewsが提供するGoogleレビュー管理・分析サービスの総称</li>
                 <li><strong>「ユーザー」</strong>: 本サービスを利用する個人または法人</li>
-                <li><strong>「運営者」</strong>: 本サービスを運営する事業者</li>
+                <li><strong>「運営者」</strong>: 本サービスを運営する事業者（NegAlert 運営事務局）</li>
                 <li><strong>「レビューデータ」</strong>: Google Business Profileから取得されるレビュー情報</li>
                 <li><strong>「AI機能」</strong>: OpenAI APIを利用したレビュー分析および返信案生成機能</li>
               </ul>
@@ -306,7 +306,7 @@ export default function TermsPage() {
                 本規約に関するお問い合わせは、以下までご連絡ください：
               </p>
               <div className="bg-gray-50 p-4 rounded">
-                <p className="font-semibold mb-2">NegAlert カスタマーサポート</p>
+                <p className="font-semibold mb-2">NegAlert 運営事務局</p>
                 <ul className="space-y-1 text-sm">
                   <li>メールアドレス: <a href="mailto:arimurahiroaki40@gmail.com" className="text-blue-600 hover:underline">arimurahiroaki40@gmail.com</a></li>
                   <li>受付時間: 平日 10:00-18:00（土日祝日を除く）</li>

@@ -35,8 +35,8 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 公開ページのパス
-  const publicPaths = ['/login', '/api/auth'];
+  // 公開ページのパス（ログイン不要でアクセス可能）
+  const publicPaths = ['/login', '/api/auth', '/privacy', '/terms'];
   const isPublicPath = publicPaths.some(path => 
     request.nextUrl.pathname.startsWith(path)
   );

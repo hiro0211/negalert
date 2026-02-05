@@ -39,12 +39,12 @@ export default function PrivacyPage() {
               <div className="bg-gray-50 p-4 rounded">
                 <p className="font-semibold mb-2">事業者情報</p>
                 <ul className="space-y-1 text-sm">
-                  <li>事業者名: [事業者名]</li>
-                  <li>住所: [住所]</li>
-                  <li>メールアドレス: <a href="mailto:arimurahiroaki40@gmail.com" className="text-blue-600 hover:underline">arimurahiroaki40@gmail.com</a></li>
+                  <li><strong>事業者名:</strong> NegAlert 運営事務局</li>
+                  <li><strong>連絡先:</strong> <a href="mailto:arimurahiroaki40@gmail.com" className="text-blue-600 hover:underline">arimurahiroaki40@gmail.com</a></li>
+                  <li><strong>住所:</strong> 請求があった場合、遅滞なく開示します。</li>
                 </ul>
                 <p className="text-xs text-gray-500 mt-2">
-                  ※上記情報は仮のものです。実際の事業者情報に更新してください。
+                  ※特定商取引法に基づき、住所は請求に応じて開示いたします。
                 </p>
               </div>
             </div>
@@ -289,7 +289,7 @@ export default function PrivacyPage() {
                 本プライバシーポリシーに関するご質問、個人情報の開示・訂正・削除のご請求、その他お問い合わせは、以下までご連絡ください：
               </p>
               <div className="bg-gray-50 p-4 rounded">
-                <p className="font-semibold mb-2">NegAlert カスタマーサポート</p>
+                <p className="font-semibold mb-2">NegAlert 運営事務局</p>
                 <ul className="space-y-1 text-sm">
                   <li>メールアドレス: <a href="mailto:arimurahiroaki40@gmail.com" className="text-blue-600 hover:underline">arimurahiroaki40@gmail.com</a></li>
                   <li>受付時間: 平日 10:00-18:00（土日祝日を除く）</li>
