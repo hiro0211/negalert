@@ -96,6 +96,20 @@ function LoginForm() {
               ログインすると、レビューの閲覧・返信権限を付与します
             </p>
           </div>
+
+          <div className="pt-4 border-t border-gray-200">
+            <p className="text-xs text-center text-gray-600">
+              ログインすることで、
+              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mx-1">
+                利用規約
+              </a>
+              および
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mx-1">
+                プライバシーポリシー
+              </a>
+              に同意したものとみなされます。
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
