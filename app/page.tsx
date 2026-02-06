@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,8 +10,28 @@ import {
   FileText,
   ArrowRight 
 } from 'lucide-react';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function LandingPage() {
+  const { isAuthenticated, login, loading } = useAuth();
+  const router = useRouter();
+
+  // 既にログイン済みの場合はダッシュボードにリダイレクト
+  useEffect(() => {
+    if (isAuthenticated && !loading) {
+      router.push('/dashboard');
+    }
+  }, [isAuthenticated, loading, router]);
+
+  const handleLogin = async () => {
+    try {
+      await login();
+    } catch (error) {
+      console.error('ログインエラー:', error);
+    }
+  };
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* ヘッダー */}
@@ -20,12 +42,15 @@ export default function LandingPage() {
               <MessageSquare className="h-8 w-8 text-blue-600" />
               <h1 className="text-2xl font-bold text-gray-900">NegAlert</h1>
             </div>
-            <Link href="/login" className="text-gray-900">
-              <Button variant="default" size="lg">
-                ログイン
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+            <Button 
+              variant="default" 
+              size="lg" 
+              onClick={handleLogin}
+              disabled={loading}
+            >
+              ログイン
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
           </div>
         </nav>
       </header>
@@ -42,12 +67,15 @@ export default function LandingPage() {
             <br />
             ネガティブレビューの早期発見で、ビジネスを守ります。
           </p>
-          <Link href="/login" className="text-gray-900">
-            <Button size="lg" className="text-lg px-8 py-6 text-gray-700">
-              今すぐ始める（無料）
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
+          <Button 
+            size="lg" 
+            className="text-lg px-8 py-6 text-gray-700"
+            onClick={handleLogin}
+            disabled={loading}
+          >
+            今すぐ始める（無料）
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
           <p className="mt-4 text-sm text-gray-500">
             Google My Businessアカウントで簡単ログイン
           </p>
@@ -183,12 +211,16 @@ export default function LandingPage() {
           <p className="text-xl text-blue-100 mb-8">
             無料で全機能をお試しいただけます
           </p>
-          <Link href="/login">
-            <Button size="lg" variant="secondary" className="text-lg px-8 py-6">
-              無料で始める
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
+          <Button 
+            size="lg" 
+            variant="secondary" 
+            className="text-lg px-8 py-6"
+            onClick={handleLogin}
+            disabled={loading}
+          >
+            無料で始める
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
         </div>
       </section>
 
