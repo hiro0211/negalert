@@ -64,7 +64,7 @@ export const mockWorkspaces: Workspace[] = [
  * - 低リスク: ★4-5のレビューまたは返信済み
  */
 export const mockReviews: Review[] = [
-  // ========== 高リスクレビュー（未返信・低評価） ==========
+  // ========== 高リスクレビュー（未返信・低評価）- AI分析未実行（デモ用） ==========
   {
     id: 'review-001',
     date: new Date('2024-06-10'),
@@ -73,10 +73,10 @@ export const mockReviews: Review[] = [
     authorName: '田中太郎',
     text: '予約していたのに30分以上待たされました。スタッフの説明もなく、非常に不愉快な思いをしました。料理も冷めていて最悪でした。二度と行きません。',
     status: 'unreplied',
-    risk: 'high',
-    aiSummary: '予約客に長時間待機させ、説明不足と料理品質に問題',
-    aiCategories: ['接客態度', '待ち時間', '料理品質'],
-    aiRiskReason: '予約客への対応不備で信頼損失',
+    risk: null, // AI分析前
+    aiSummary: null, // AI分析前
+    aiCategories: null, // AI分析前
+    aiRiskReason: null, // AI分析前
     photos: [],
   },
   {
@@ -87,10 +87,10 @@ export const mockReviews: Review[] = [
     authorName: '山田花子',
     text: '店員の態度が最悪でした。質問しても無視され、オーダーミスがあっても謝罪の一言もありませんでした。こんな店は初めてです。',
     status: 'unreplied',
-    risk: 'high',
-    aiSummary: '店員の接客態度とオーダーミス対応に重大な問題',
-    aiCategories: ['接客態度', 'オーダーミス', '謝罪なし'],
-    aiRiskReason: '基本的な接客マナーの欠如',
+    risk: null, // AI分析前
+    aiSummary: null, // AI分析前
+    aiCategories: null, // AI分析前
+    aiRiskReason: null, // AI分析前
     photos: [],
   },
   {
@@ -101,10 +101,10 @@ export const mockReviews: Review[] = [
     authorName: '佐藤健一',
     text: 'トイレが汚れていて使えたものではありませんでした。衛生面に問題があると思います。食事も楽しめませんでした。',
     status: 'unreplied',
-    risk: 'high',
-    aiSummary: '衛生管理に深刻な問題、トイレの清潔さ不十分',
-    aiCategories: ['清潔感', '衛生管理', '設備'],
-    aiRiskReason: '衛生面の問題は飲食店として致命的',
+    risk: null, // AI分析前
+    aiSummary: null, // AI分析前
+    aiCategories: null, // AI分析前
+    aiRiskReason: null, // AI分析前
     photos: [],
   },
   {
@@ -115,14 +115,14 @@ export const mockReviews: Review[] = [
     authorName: '鈴木美咲',
     text: 'メニューの写真と実物が全く違います。明らかに誇大広告です。値段も高すぎてコスパ最悪。',
     status: 'unreplied',
-    risk: 'high',
-    aiSummary: 'メニュー表記と実物の乖離、価格設定への不満',
-    aiCategories: ['料理品質', '価格', '誇大広告'],
-    aiRiskReason: '誇大広告は法的リスクあり',
+    risk: null, // AI分析前
+    aiSummary: null, // AI分析前
+    aiCategories: null, // AI分析前
+    aiRiskReason: null, // AI分析前
     photos: [],
   },
 
-  // ========== 中リスクレビュー（未返信・中評価） ==========
+  // ========== 中リスクレビュー（未返信・中評価）- AI分析未実行（デモ用） ==========
   {
     id: 'review-005',
     date: new Date('2024-06-06'),
@@ -131,10 +131,10 @@ export const mockReviews: Review[] = [
     authorName: '高橋誠',
     text: '普通でした。料理の味は悪くないですが、提供が遅く、店内も少し騒がしかったです。可もなく不可もなくといった感じです。',
     status: 'unreplied',
-    risk: 'medium',
-    aiSummary: '料理は普通レベル、提供速度と店内環境に改善余地',
-    aiCategories: ['提供時間', '店内環境', '料理品質'],
-    aiRiskReason: '改善点が明確で対応次第で評価向上可能',
+    risk: null, // AI分析前
+    aiSummary: null, // AI分析前
+    aiCategories: null, // AI分析前
+    aiRiskReason: null, // AI分析前
     photos: [],
   },
   {
