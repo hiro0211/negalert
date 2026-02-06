@@ -7,6 +7,16 @@ import { DashboardStats } from '../types';
 import { createClient } from '../supabase/client';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { ja } from 'date-fns/locale';
+import { 
+  getMockDashboardStats,
+  getMockReviewGrowth,
+  getMockRatingDistribution,
+  getMockNegativeFactors,
+  getMockStatsByPeriod,
+} from '../data/mock-stats';
+
+// モックモードの判定
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
 /**
  * ダッシュボード統計データを取得
@@ -14,6 +24,13 @@ import { ja } from 'date-fns/locale';
  * @returns ダッシュボード統計
  */
 export async function fetchDashboardStats(): Promise<DashboardStats> {
+  // モックモード: 静的データを返す
+  if (USE_MOCK_DATA) {
+    console.log('[Mock] モックの統計データを返します');
+    return getMockDashboardStats();
+  }
+
+  // 本番モード: Supabaseから取得
   const supabase = createClient();
   
   // Supabaseから全レビューを取得
@@ -197,6 +214,13 @@ function calculateMonthlyChanges(
 export async function fetchReviewGrowth(
   months: number = 6
 ): Promise<{ month: string; count: number }[]> {
+  // モックモード: 静的データを返す
+  if (USE_MOCK_DATA) {
+    console.log('[Mock] モックのレビュー推移データを返します');
+    return getMockReviewGrowth(months);
+  }
+
+  // 本番モード: Supabaseから取得
   const supabase = createClient();
   const startDate = subMonths(new Date(), months);
   
@@ -254,6 +278,13 @@ function calculateReviewGrowthForMonths(
 export async function fetchRatingDistribution(): Promise<
   { rating: number; count: number }[]
 > {
+  // モックモード: 静的データを返す
+  if (USE_MOCK_DATA) {
+    console.log('[Mock] モックの星評価分布を返します');
+    return getMockRatingDistribution();
+  }
+
+  // 本番モード: Supabaseから取得
   const supabase = createClient();
   
   const { data, error } = await supabase
@@ -285,6 +316,13 @@ export async function fetchRatingDistribution(): Promise<
 export async function fetchNegativeFactors(): Promise<
   { factor: string; count: number }[]
 > {
+  // モックモード: 静的データを返す
+  if (USE_MOCK_DATA) {
+    console.log('[Mock] モックのネガティブ要因を返します');
+    return getMockNegativeFactors();
+  }
+
+  // 本番モード: Supabaseから取得
   const supabase = createClient();
   
   // AI分析機能は今後実装予定のため、暫定的にネガティブレビュー数のみ返す
@@ -318,6 +356,13 @@ export async function fetchStatsByPeriod(
   startDate: Date,
   endDate: Date
 ): Promise<DashboardStats> {
+  // モックモード: 静的データを返す
+  if (USE_MOCK_DATA) {
+    console.log('[Mock] モックの期間指定統計データを返します');
+    return getMockStatsByPeriod(startDate, endDate);
+  }
+
+  // 本番モード: Supabaseから取得
   const supabase = createClient();
   
   const { data: reviews, error } = await supabase

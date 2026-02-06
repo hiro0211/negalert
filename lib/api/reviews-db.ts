@@ -4,6 +4,10 @@
  */
 
 import { SupabaseClient } from '@supabase/supabase-js';
+import { getMockReviewById } from '@/lib/data/mock-data';
+
+// モックモードの判定
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
 /**
  * レビューの返信をDBに保存
@@ -19,6 +23,16 @@ export async function updateReviewReplyInDb(
   repliedAt: string,
   supabase: SupabaseClient
 ): Promise<void> {
+  // モックモード: DB更新をスキップ（ログのみ）
+  if (USE_MOCK_DATA) {
+    console.log('[Mock] 返信のDB保存をスキップ:', {
+      reviewId,
+      replyText: replyText.substring(0, 50) + '...',
+    });
+    return;
+  }
+
+  // 本番モード: Supabaseに保存
   const { error } = await supabase
     .from('reviews')
     .update({
@@ -44,6 +58,13 @@ export async function deleteReviewReplyInDb(
   reviewId: string,
   supabase: SupabaseClient
 ): Promise<void> {
+  // モックモード: DB更新をスキップ（ログのみ）
+  if (USE_MOCK_DATA) {
+    console.log('[Mock] 返信削除のDB更新をスキップ:', reviewId);
+    return;
+  }
+
+  // 本番モード: Supabaseから削除
   const { error } = await supabase
     .from('reviews')
     .update({
@@ -70,6 +91,34 @@ export async function getReviewFromDb(
   reviewId: string,
   supabase: SupabaseClient
 ): Promise<any> {
+  // モックモード: 静的データから取得
+  if (USE_MOCK_DATA) {
+    console.log('[Mock] モックデータからレビューを取得:', reviewId);
+    const mockReview = getMockReviewById(reviewId);
+    
+    if (!mockReview) {
+      throw new Error('レビューが見つかりません');
+    }
+    
+    // モックレビューをDB形式に変換
+    return {
+      id: mockReview.id,
+      rating: mockReview.rating,
+      comment: mockReview.text,
+      author_name: mockReview.authorName,
+      review_created_at: mockReview.date.toISOString(),
+      status: mockReview.status,
+      reply_text: mockReview.reply || null,
+      reply_created_at: mockReview.replyCreatedAt?.toISOString() || null,
+      ai_summary: mockReview.aiSummary,
+      ai_categories: mockReview.aiCategories,
+      ai_risk_reason: mockReview.aiRiskReason,
+      risk: mockReview.risk,
+      reply_draft: mockReview.replyDraft || null,
+    };
+  }
+
+  // 本番モード: Supabaseから取得
   const { data, error } = await supabase
     .from('reviews')
     .select('*')
@@ -132,6 +181,18 @@ export async function updateReviewAnalysisInDb(
   },
   supabase: SupabaseClient
 ): Promise<void> {
+  // モックモード: DB更新をスキップ（ログのみ）
+  if (USE_MOCK_DATA) {
+    console.log('[Mock] AI分析結果のDB保存をスキップ:', {
+      reviewId,
+      summary: analysisResult.summary,
+      risk: analysisResult.risk,
+    });
+    // モックモードではDB更新しないが、エラーも出さない
+    return;
+  }
+
+  // 本番モード: Supabaseに保存
   const { error } = await supabase
     .from('reviews')
     .update({

@@ -4,10 +4,14 @@
  */
 
 import { GoogleLocation, GoogleReview, GoogleReviewReplyInput } from './types';
+import { mockLocations } from '@/lib/data/mock-data';
 
 // Google Business Profile API エンドポイント
 const GMB_API_BASE = 'https://mybusinessbusinessinformation.googleapis.com/v1';
 const GMB_ACCOUNT_API_BASE = 'https://mybusinessaccountmanagement.googleapis.com/v1';
+
+// モックモードの判定
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
 /**
  * Google Business ProfileのアカウントIDを取得
@@ -53,6 +57,15 @@ export async function getAccountId(accessToken: string): Promise<string> {
 export async function listLocations(
   accessToken: string
 ): Promise<GoogleLocation[]> {
+  // モックモード: 静的データを返す
+  if (USE_MOCK_DATA) {
+    console.log('[Mock] モックの店舗一覧を返します');
+    // 遅延をシミュレート
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return mockLocations;
+  }
+
+  // 本番モード: Google APIを呼び出す
   // アカウントIDを取得
   const accountId = await getAccountId(accessToken);
   

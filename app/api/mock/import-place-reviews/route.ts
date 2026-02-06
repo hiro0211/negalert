@@ -122,35 +122,20 @@ export async function POST(request: NextRequest) {
       console.log('📍 既存のワークスペースを使用:', workspaceId);
     }
 
-    // 5. Google Places API呼び出し
-    const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+    // 5. モックレビューを取得（Google Places API呼び出しをスキップ）
+    console.log('🎭 [Mock] モックレビューデータを使用します（placeIdは無視）:', placeId);
     
-    if (!apiKey) {
-      return NextResponse.json(
-        { success: false, error: 'GOOGLE_PLACES_API_KEYが設定されていません' } as ImportPlaceReviewsResponse,
-        { status: 500 }
-      );
-    }
-
-    const placesApiUrl = new URL('https://maps.googleapis.com/maps/api/place/details/json');
-    placesApiUrl.searchParams.append('place_id', placeId);
-    placesApiUrl.searchParams.append('fields', 'name,reviews');
-    placesApiUrl.searchParams.append('language', 'ja');
-    placesApiUrl.searchParams.append('key', apiKey);
-
-    console.log('🌐 Google Places API呼び出し:', placeId);
+    // モックレビューデータをインポート
+    const { mockReviews } = await import('@/lib/data/mock-data');
     
-    const placesResponse = await fetch(placesApiUrl.toString());
-    const placesData: PlacesApiResponse = await placesResponse.json();
-
-    if (placesData.status !== 'OK') {
-      return NextResponse.json(
-        { success: false, error: `Google Places APIエラー: ${placesData.status}` } as ImportPlaceReviewsResponse,
-        { status: 500 }
-      );
-    }
-
-    const reviews = placesData.result.reviews || [];
+    // モックレビューを Places API 形式に変換
+    const reviews: PlacesApiReview[] = mockReviews.slice(0, 10).map((review, index) => ({
+      author_name: review.authorName,
+      profile_photo_url: undefined,
+      rating: review.rating,
+      text: review.text,
+      time: Math.floor(review.date.getTime() / 1000) - (index * 86400), // 1日ずつ古くする
+    }));
     
     if (reviews.length === 0) {
       return NextResponse.json(

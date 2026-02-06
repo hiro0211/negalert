@@ -16,6 +16,9 @@ import {
 } from '@/lib/api/reviews-db';
 import { ReplyToReviewResponse, DeleteReplyResponse } from '@/lib/api/types';
 
+// モックモードの判定
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+
 /**
  * レビューに返信を投稿・更新
  * POST /api/reviews/[id]/reply
@@ -60,18 +63,21 @@ export async function POST(
     }
     
     // 3. アクセストークン取得（期限切れなら自動リフレッシュ）
-    let accessToken: string;
-    try {
-      accessToken = await getValidAccessToken(user.id, supabase);
-    } catch (tokenError) {
-      console.error('トークン取得エラー:', tokenError);
-      return NextResponse.json(
-        {
-          success: false,
-          error: tokenError instanceof Error ? tokenError.message : 'トークンの取得に失敗しました',
-        } as ReplyToReviewResponse,
-        { status: 401 }
-      );
+    // モックモードではスキップ
+    let accessToken: string = '';
+    if (!USE_MOCK_DATA) {
+      try {
+        accessToken = await getValidAccessToken(user.id, supabase);
+      } catch (tokenError) {
+        console.error('トークン取得エラー:', tokenError);
+        return NextResponse.json(
+          {
+            success: false,
+            error: tokenError instanceof Error ? tokenError.message : 'トークンの取得に失敗しました',
+          } as ReplyToReviewResponse,
+          { status: 401 }
+        );
+      }
     }
     
     // 4. レビュー情報を取得（google_review_idを取得するため）
@@ -90,24 +96,29 @@ export async function POST(
     }
     
     // 5. Google APIに返信を投稿
-    try {
-      await replyToGoogleReview(review.google_review_id, replyText, accessToken);
-    } catch (googleError) {
-      console.error('Google API呼び出しエラー:', googleError);
-      
-      // Google API失敗時はDBを更新せずにエラーを返す（整合性維持）
-      const errorMessage = googleError instanceof Error ? googleError.message : 'Google APIの呼び出しに失敗しました';
-      const statusCode = errorMessage.includes('認証エラー') ? 401 : 
-                         errorMessage.includes('権限エラー') ? 403 : 
-                         errorMessage.includes('見つかりません') ? 404 : 500;
-      
-      return NextResponse.json(
-        {
-          success: false,
-          error: errorMessage,
-        } as ReplyToReviewResponse,
-        { status: statusCode }
-      );
+    // モックモードではスキップ
+    if (!USE_MOCK_DATA) {
+      try {
+        await replyToGoogleReview(review.google_review_id, replyText, accessToken);
+      } catch (googleError) {
+        console.error('Google API呼び出しエラー:', googleError);
+        
+        // Google API失敗時はDBを更新せずにエラーを返す（整合性維持）
+        const errorMessage = googleError instanceof Error ? googleError.message : 'Google APIの呼び出しに失敗しました';
+        const statusCode = errorMessage.includes('認証エラー') ? 401 : 
+                           errorMessage.includes('権限エラー') ? 403 : 
+                           errorMessage.includes('見つかりません') ? 404 : 500;
+        
+        return NextResponse.json(
+          {
+            success: false,
+            error: errorMessage,
+          } as ReplyToReviewResponse,
+          { status: statusCode }
+        );
+      }
+    } else {
+      console.log('[Mock] Google APIへの返信投稿をスキップ');
     }
     
     // 6. DB更新（Google API成功後のみ）
@@ -188,18 +199,21 @@ export async function DELETE(
     console.log('🗑️ レビュー返信削除を開始:', { reviewId: id, userId: user.id });
     
     // 2. アクセストークン取得（期限切れなら自動リフレッシュ）
-    let accessToken: string;
-    try {
-      accessToken = await getValidAccessToken(user.id, supabase);
-    } catch (tokenError) {
-      console.error('トークン取得エラー:', tokenError);
-      return NextResponse.json(
-        {
-          success: false,
-          error: tokenError instanceof Error ? tokenError.message : 'トークンの取得に失敗しました',
-        } as DeleteReplyResponse,
-        { status: 401 }
-      );
+    // モックモードではスキップ
+    let accessToken: string = '';
+    if (!USE_MOCK_DATA) {
+      try {
+        accessToken = await getValidAccessToken(user.id, supabase);
+      } catch (tokenError) {
+        console.error('トークン取得エラー:', tokenError);
+        return NextResponse.json(
+          {
+            success: false,
+            error: tokenError instanceof Error ? tokenError.message : 'トークンの取得に失敗しました',
+          } as DeleteReplyResponse,
+          { status: 401 }
+        );
+      }
     }
     
     // 3. レビュー情報を取得（google_review_idを取得するため）
@@ -218,24 +232,29 @@ export async function DELETE(
     }
     
     // 4. Google APIから返信を削除
-    try {
-      await deleteGoogleReviewReply(review.google_review_id, accessToken);
-    } catch (googleError) {
-      console.error('Google API呼び出しエラー:', googleError);
-      
-      // Google API失敗時はDBを更新せずにエラーを返す（整合性維持）
-      const errorMessage = googleError instanceof Error ? googleError.message : 'Google APIの呼び出しに失敗しました';
-      const statusCode = errorMessage.includes('認証エラー') ? 401 : 
-                         errorMessage.includes('権限エラー') ? 403 : 
-                         errorMessage.includes('見つかりません') ? 404 : 500;
-      
-      return NextResponse.json(
-        {
-          success: false,
-          error: errorMessage,
-        } as DeleteReplyResponse,
-        { status: statusCode }
-      );
+    // モックモードではスキップ
+    if (!USE_MOCK_DATA) {
+      try {
+        await deleteGoogleReviewReply(review.google_review_id, accessToken);
+      } catch (googleError) {
+        console.error('Google API呼び出しエラー:', googleError);
+        
+        // Google API失敗時はDBを更新せずにエラーを返す（整合性維持）
+        const errorMessage = googleError instanceof Error ? googleError.message : 'Google APIの呼び出しに失敗しました';
+        const statusCode = errorMessage.includes('認証エラー') ? 401 : 
+                           errorMessage.includes('権限エラー') ? 403 : 
+                           errorMessage.includes('見つかりません') ? 404 : 500;
+        
+        return NextResponse.json(
+          {
+            success: false,
+            error: errorMessage,
+          } as DeleteReplyResponse,
+          { status: statusCode }
+        );
+      }
+    } else {
+      console.log('[Mock] Google APIからの返信削除をスキップ');
     }
     
     // 5. DB更新（Google API成功後のみ）
