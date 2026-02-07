@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { StarRating } from '@/components/common/star-rating';
 import { StatusBadge } from '@/components/common/status-badge';
 import { RiskBadge } from '@/components/common/risk-badge';
@@ -25,7 +26,8 @@ export function ReviewTable({ reviews }: ReviewTableProps) {
 
   return (
     <>
-      <div className="rounded-md border bg-white">
+      {/* Desktop Table View */}
+      <div className="hidden md:block rounded-md border bg-white">
         <Table>
           <TableHeader>
             <TableRow>
@@ -115,8 +117,67 @@ export function ReviewTable({ reviews }: ReviewTableProps) {
         </Table>
       </div>
 
-      <div className="mt-4 flex items-center justify-between text-sm ">
-        <div>Showing 1-{reviews.length} of {reviews.length} results</div>
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {reviews.length === 0 ? (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <div className="flex flex-col items-center justify-center text-gray-500">
+                <p className="text-sm">レビューがありません</p>
+                <p className="text-xs mt-1">Google Business Profileとの連携を確認してください</p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          reviews.map((review) => (
+            <Card
+              key={review.id}
+              className="cursor-pointer hover:bg-gray-50 transition-colors"
+              onClick={() => setSelectedReview(review)}
+            >
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  {/* Header: Date, Status, Rating */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex flex-col gap-2">
+                      <div className="text-sm font-medium text-gray-900">
+                        {format(new Date(review.date), 'M月d日', { locale: ja })}
+                      </div>
+                      <StarRating rating={review.rating} />
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <StatusBadge status={review.status} />
+                      {review.risk && <RiskBadge risk={review.risk} showIcon={false} />}
+                    </div>
+                  </div>
+
+                  {/* Review Text */}
+                  <div>
+                    <div className="text-sm text-gray-900 line-clamp-3">{review.text}</div>
+                    <div className="mt-2 text-xs text-gray-700">{review.authorName}</div>
+                  </div>
+
+                  {/* Action Button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedReview(review);
+                    }}
+                  >
+                    詳細を見る
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+
+      <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
+        <div className="text-gray-600">Showing 1-{reviews.length} of {reviews.length} results</div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" disabled className="text-white">
             前へ

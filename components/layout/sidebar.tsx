@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Mail, CheckSquare, Settings, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 const navItems = [
   {
@@ -35,11 +37,16 @@ const navItems = [
   // },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  open?: boolean;
+  onClose?: () => void;
+}
+
+function SidebarContent() {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-full w-64 flex-col border-r bg-gray-50">
+    <>
       <div className="flex h-16 items-center border-b px-6">
         <h1 className="text-2xl font-bold text-primary text-gray-600">NegAlert</h1>
       </div>
@@ -65,9 +72,32 @@ export function Sidebar() {
       </nav>
       <div className="border-t p-4">
         <div className="text-xs text-gray-600">
-          © 2024 NegAlert
+          © 2026 NegAlert
         </div>
       </div>
-    </div>
+    </>
+  );
+}
+
+export function Sidebar({ open = false, onClose }: SidebarProps) {
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <div className="hidden md:flex h-full w-64 flex-col border-r bg-gray-50">
+        <SidebarContent />
+      </div>
+
+      {/* Mobile Sidebar (Sheet/Drawer) */}
+      <Sheet open={open} onOpenChange={onClose}>
+        <SheetContent side="left" className="w-64 p-0">
+          <VisuallyHidden>
+            <SheetTitle>ナビゲーションメニュー</SheetTitle>
+          </VisuallyHidden>
+          <div className="flex h-full flex-col bg-gray-50">
+            <SidebarContent />
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }

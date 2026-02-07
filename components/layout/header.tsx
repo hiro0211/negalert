@@ -5,11 +5,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ToastAction } from '@/components/ui/toast';
-import { Search, User, LogOut, RefreshCw } from 'lucide-react';
+import { Search, User, LogOut, RefreshCw, Menu } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useToast } from '@/lib/hooks/useToast';
 
-export function Header() {
+interface HeaderProps {
+  onMenuClick?: () => void;
+}
+
+export function Header({ onMenuClick }: HeaderProps) {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -84,8 +88,18 @@ export function Header() {
   };
 
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-white px-6">
-      <div className="flex items-center gap-4">
+    <header className="flex h-16 items-center justify-between border-b bg-white px-4 md:px-6">
+      <div className="flex items-center gap-2 md:gap-4">
+        {/* Mobile Menu Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onMenuClick}
+          className="md:hidden"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+
         {/* <Select defaultValue="loc1">
           <SelectTrigger className="w-[280px]">
             <SelectValue />
@@ -107,7 +121,7 @@ export function Header() {
         </Select> */}
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4">
         {/* <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <Input
@@ -123,22 +137,23 @@ export function Header() {
           className="gap-2"
         >
           <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-          {isSyncing ? '同期中...' : 'レビューを更新'}
+          <span className="hidden sm:inline">{isSyncing ? '同期中...' : 'レビューを更新'}</span>
+          <span className="sm:hidden">{isSyncing ? '同期中' : '更新'}</span>
         </Button>
         <div className="flex items-center gap-2">
-          <div className="text-right">
+          <div className="hidden md:block text-right">
             <div className="text-sm font-medium text-gray-600">{user?.name || 'ユーザー'}</div>
             <div className="text-xs text-gray-600">{user?.email || ''}</div>
           </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white">
-            <User className="h-5 w-5" />
+          <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full bg-primary text-white">
+            <User className="h-4 w-4 md:h-5 md:w-5" />
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="ml-2 text-gray-600"
+            className="text-gray-600"
           >
             <LogOut className="h-4 w-4" />
           </Button>

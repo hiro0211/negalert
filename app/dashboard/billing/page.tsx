@@ -31,7 +31,7 @@ export default function BillingPage() {
             </div>
             <div className="rounded-lg border p-4">
               <div className="text-sm text-gray-700 mb-1">次回請求日</div>
-              <div className="text-xl font-semibold text-gray-700">2024年7月1日</div>
+              <div className="text-xl font-semibold text-gray-700">2026年7月1日</div>
             </div>
           </div>
 
@@ -71,9 +71,9 @@ export default function BillingPage() {
         <CardContent>
           <div className="space-y-3">
             {[
-              { date: '2024年6月1日', amount: '¥9,800', status: '支払い済み' },
-              { date: '2024年5月1日', amount: '¥9,800', status: '支払い済み' },
-              { date: '2024年4月1日', amount: '¥9,800', status: '支払い済み' },
+              { date: '2026年6月1日', amount: '¥9,800', status: '支払い済み' },
+              { date: '2026年5月1日', amount: '¥9,800', status: '支払い済み' },
+              { date: '2026年4月1日', amount: '¥9,800', status: '支払い済み' },
             ].map((payment, index) => (
               <div key={index} className="flex items-center justify-between border-b pb-3 last:border-0">
                 <div>

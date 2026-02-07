@@ -7,14 +7,14 @@ const mockNotifications = [
     id: '1',
     type: 'slack',
     message: 'Slack通知送信済み',
-    timestamp: '2024/06/05 12:34',
+    timestamp: '2026/06/05 12:34',
     icon: MessageSquare,
   },
   {
     id: '2',
     type: 'email',
     message: 'メール通知送信済み',
-    timestamp: '2024/06/05 12:35',
+    timestamp: '2026/06/05 12:35',
     icon: Mail,
   },
 ];

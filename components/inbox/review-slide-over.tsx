@@ -140,7 +140,7 @@ export function ReviewSlideOver({ review: initialReview, open, onOpenChange }: R
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[700px] sm:max-w-[700px] overflow-y-auto bg-gray-50">
+      <SheetContent className="w-full sm:w-[700px] sm:max-w-[90vw] overflow-y-auto bg-gray-50">
         <SheetHeader>
           <SheetTitle className="text-gray-600">レビュー詳細</SheetTitle>
         </SheetHeader>
@@ -148,7 +148,7 @@ export function ReviewSlideOver({ review: initialReview, open, onOpenChange }: R
         <div className="mt-6 space-y-6">
           {/* レビュー基本情報 */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <StarRating rating={review.rating} size="lg" showNumber />
               <div className="flex gap-2">
                 <StatusBadge status={review.status} />
@@ -310,7 +310,7 @@ export function ReviewSlideOver({ review: initialReview, open, onOpenChange }: R
               disabled={isPublishing}
             />
 
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button
                 variant="outline"
                 onClick={handleCopy}

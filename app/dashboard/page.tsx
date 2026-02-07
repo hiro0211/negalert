@@ -52,9 +52,9 @@ export default function DashboardPage() {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4">
         <div className="text-center max-w-md">
-          <MessageSquare className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-700 mb-2">レビューデータがありません</h2>
-          <p className="text-gray-600 mb-6">
+          <MessageSquare className="h-12 w-12 md:h-16 md:w-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-xl md:text-2xl font-bold text-gray-700 mb-2">レビューデータがありません</h2>
+          <p className="text-sm md:text-base text-gray-600 mb-6">
             ヘッダーの「レビューを更新」ボタンをクリックして、Google Business Profileからレビューを取得してください。
           </p>
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
@@ -80,12 +80,12 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-700">Dashboard</h1>
-          <p className="text-gray-800 mt-1">レビュー管理の概要</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-700">Dashboard</h1>
+          <p className="text-sm md:text-base text-gray-800 mt-1">レビュー管理の概要</p>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title="平均★評価"
           value={stats.averageRating.toFixed(2)}
@@ -134,7 +134,7 @@ export default function DashboardPage() {
 
       <ReviewGrowthChart data={stats.reviewGrowth} />
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2">
         <RatingBreakdown data={stats.ratingDistribution} />
         <NegativeFactors data={stats.negativeFactors} />
       </div>

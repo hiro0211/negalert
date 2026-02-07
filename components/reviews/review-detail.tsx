@@ -14,12 +14,12 @@ export function ReviewDetail({ review }: ReviewDetailProps) {
     <Card>
       <CardContent className="pt-6">
         <div className="space-y-4">
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             <div>
-              <h3 className="text-xl font-bold">{review.authorName}</h3>
-              <div className="mt-1 flex items-center gap-3 text-sm text-gray-700">
+              <h3 className="text-lg md:text-xl font-bold">{review.authorName}</h3>
+              <div className="mt-1 flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-700">
                 <span>{format(new Date(review.date), 'yyyy年M月d日', { locale: ja })}</span>
-                <span>·</span>
+                <span className="hidden sm:inline">·</span>
                 <div className="flex items-center gap-1">
                   <svg className="h-4 w-4" viewBox="0 0 24 24">
                     <path
@@ -47,7 +47,7 @@ export function ReviewDetail({ review }: ReviewDetailProps) {
           </div>
 
           <div className="rounded-lg bg-gray-50 p-4">
-            <p className="text-base leading-relaxed">{review.text}</p>
+            <p className="text-sm md:text-base leading-relaxed">{review.text}</p>
           </div>
 
           {review.photos && review.photos.length > 0 && (

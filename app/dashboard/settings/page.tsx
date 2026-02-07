@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,13 +17,15 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const isMockMode = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+  
+  // モックモードの状態管理（LocalStorageと連携）
+  const [isMockMode, setIsMockMode] = useState(false);
   
   const [ratingThreshold, setRatingThreshold] = useState([3]);
   const [dangerWords, setDangerWords] = useState([
-    { id: '1', word: '最悪', addedDate: '2024/05/01' },
-    { id: '2', word: '二度と行かない', addedDate: '2024/05/02' },
-    { id: '3', word: '態度が悪い', addedDate: '2024/05/03' },
+    { id: '1', word: '最悪', addedDate: '2026/05/01' },
+    { id: '2', word: '二度と行かない', addedDate: '2026/05/02' },
+    { id: '3', word: '態度が悪い', addedDate: '2026/05/03' },
   ]);
   const [newWord, setNewWord] = useState('');
   
@@ -35,6 +37,20 @@ export default function SettingsPage() {
     message: string;
     count?: number;
   }>({ type: null, message: '' });
+
+  // LocalStorageからモックモード設定を読み込み
+  useEffect(() => {
+    const saved = localStorage.getItem('mockMode');
+    if (saved) {
+      setIsMockMode(saved === 'true');
+    }
+  }, []);
+
+  // モックモードの切り替えハンドラ
+  const handleMockModeToggle = (checked: boolean) => {
+    setIsMockMode(checked);
+    localStorage.setItem('mockMode', String(checked));
+  };
 
   const handleAddWord = () => {
     if (newWord.trim()) {
@@ -107,12 +123,12 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-700">設定</h1>
-        <p className="text-gray-800 mt-1">通知とレビュー管理の設定</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-700">設定</h1>
+        <p className="text-sm md:text-base text-gray-800 mt-1">通知とレビュー管理の設定</p>
       </div>
 
       <Tabs defaultValue="notification" className="w-full">
-        <TabsList className={`grid w-full ${isMockMode ? 'grid-cols-4' : 'grid-cols-3'}`}>
+        <TabsList className={`grid w-full ${isMockMode ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2 sm:grid-cols-3'}`}>
           <TabsTrigger value="notification" className="text-gray-700">通知</TabsTrigger>
           <TabsTrigger value="reply" className="text-gray-700">返信設定</TabsTrigger>
           <TabsTrigger value="danger-words" className="text-gray-700">危険語辞書</TabsTrigger>
@@ -138,7 +154,7 @@ export default function SettingsPage() {
                     step={1}
                     className="flex-1"
                   />
-                  <span className="text-2xl font-bold text-gray-700 w-12">★{ratingThreshold[0]}</span>
+                  <span className="text-xl md:text-2xl font-bold text-gray-700 w-12">★{ratingThreshold[0]}</span>
                 </div>
                 <p className="text-sm text-gray-700">
                   この評価以下のレビューが投稿されたときに通知します
@@ -161,6 +177,23 @@ export default function SettingsPage() {
                     </label>
                   </div>
                 </div>
+              </div>
+
+              <div className="space-y-3 pt-4 border-t border-gray-200">
+                <Label className="text-gray-700">モックモード（テストデータ）</Label>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="mockMode" 
+                    checked={isMockMode}
+                    onCheckedChange={handleMockModeToggle}
+                  />
+                  <label htmlFor="mockMode" className="text-sm font-medium text-gray-700 cursor-pointer">
+                    モックモードを有効にする
+                  </label>
+                </div>
+                <p className="text-sm text-gray-600">
+                  モックモードを有効にすると、テストデータのインポート機能が使用できます
+                </p>
               </div>
 
               <Button className="text-gray-700">設定を保存</Button>

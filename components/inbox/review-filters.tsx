@@ -18,9 +18,9 @@ export function ReviewFilters({ unrepliedCount, actionRequiredCount, respondedCo
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-wrap">
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[140px] text-gray-700">
+          <SelectTrigger className="w-full sm:w-[140px] text-gray-700">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-white text-gray-700">
@@ -33,12 +33,13 @@ export function ReviewFilters({ unrepliedCount, actionRequiredCount, respondedCo
         <Button
           variant={ratingFilter === 'negative' ? 'default' : 'outline'}
           onClick={() => setRatingFilter(ratingFilter === 'negative' ? 'all' : 'negative')}
+          className="w-full sm:w-auto"
         >
           ネガのみ (★1-3)
         </Button>
 
         <Select value={periodFilter} onValueChange={setPeriodFilter}>
-          <SelectTrigger className="w-[140px] text-gray-700">
+          <SelectTrigger className="w-full sm:w-[140px] text-gray-700">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-white">
@@ -48,7 +49,7 @@ export function ReviewFilters({ unrepliedCount, actionRequiredCount, respondedCo
           </SelectContent>
         </Select>
 
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-700" />
           <Input
             placeholder="レビューを検索..."
@@ -59,7 +60,7 @@ export function ReviewFilters({ unrepliedCount, actionRequiredCount, respondedCo
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         <Badge variant="secondary" className="bg-purple-100 text-purple-800">
           {unrepliedCount} 未読
         </Badge>

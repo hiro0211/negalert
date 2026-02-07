@@ -22,15 +22,15 @@ export function StatsCard({ title, value, change, icon: Icon, trend, valueClassN
         <Icon className="h-4 w-4 text-gray-700" />
       </CardHeader>
       <CardContent>
-        <div className={cn('text-3xl font-bold text-gray-900', valueClassName)}>{value}</div>
+        <div className={cn('text-2xl md:text-3xl font-bold text-gray-900', valueClassName)}>{value}</div>
         {change !== undefined && (
-          <div className="mt-2 flex items-center text-sm">
+          <div className="mt-2 flex items-center text-xs md:text-sm">
             {isNoChange ? (
-              <Minus className="mr-1 h-4 w-4 text-gray-500" />
+              <Minus className="mr-1 h-3 w-3 md:h-4 md:w-4 text-gray-500" />
             ) : trend === 'up' ? (
-              <ArrowUp className="mr-1 h-4 w-4 text-green-500" />
+              <ArrowUp className="mr-1 h-3 w-3 md:h-4 md:w-4 text-green-500" />
             ) : (
-              <ArrowDown className="mr-1 h-4 w-4 text-red-500" />
+              <ArrowDown className="mr-1 h-3 w-3 md:h-4 md:w-4 text-red-500" />
             )}
             <span className={isNoChange ? 'text-gray-500' : trend === 'up' ? 'text-green-500' : 'text-red-500'}>
               {isNoChange ? '変化なし' : `${change > 0 ? '+' : ''}${change}`}
