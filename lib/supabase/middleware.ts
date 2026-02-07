@@ -48,8 +48,8 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // ログイン済みユーザーがログインページにアクセスした場合、ダッシュボードにリダイレクト
-  if (user && request.nextUrl.pathname === '/login') {
+  // ログイン済みユーザーがログインページまたはLPページにアクセスした場合、ダッシュボードにリダイレクト
+  if (user && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/')) {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);
