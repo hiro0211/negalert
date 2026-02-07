@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Negalert",
   description: "Google口コミのネガティブアラート＆AI分析ツール",
+  verification: {
+    google: "8gAJm7L-t9PPc24zcgTd-AAspZNRR8yrVoXfeQ3deGA",
+  },
 };
 
 export default function RootLayout({
