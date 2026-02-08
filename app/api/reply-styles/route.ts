@@ -55,7 +55,6 @@ export async function GET(request: NextRequest) {
       description: style.description,
       exampleReplies: style.example_replies,
       requiredElements: style.required_elements || {},
-      tone: style.tone,
       isDefault: style.is_default,
       createdBy: style.created_by,
       createdAt: style.created_at,
@@ -105,7 +104,7 @@ export async function POST(request: NextRequest) {
 
     // リクエストボディ取得
     const body = await request.json();
-    const { name, description, exampleReplies, requiredElements, tone, isDefault } = body;
+    const { name, description, exampleReplies, requiredElements, isDefault } = body;
 
     // バリデーション
     if (!name || !name.trim()) {
@@ -140,7 +139,6 @@ export async function POST(request: NextRequest) {
         description: description?.trim() || null,
         example_replies: exampleReplies,
         required_elements: requiredElements || {},
-        tone: tone || null,
         is_default: isDefault || false,
         created_by: user.id,
       })
@@ -171,7 +169,6 @@ export async function POST(request: NextRequest) {
       description: newStyle.description,
       exampleReplies: newStyle.example_replies,
       requiredElements: newStyle.required_elements,
-      tone: newStyle.tone,
       isDefault: newStyle.is_default,
       createdBy: newStyle.created_by,
       createdAt: newStyle.created_at,

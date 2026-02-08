@@ -58,17 +58,6 @@ export function ReplyStyleCard({ style, onEdit, onDelete }: ReplyStyleCardProps)
             <Badge className="text-gray-600" variant="outline">{style.exampleReplies.length}件</Badge>
           </div>
           
-          {style.tone && (
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-gray-600">トーン:</span>
-              <Badge className="text-gray-600" variant="outline">
-                {style.tone === 'friendly' && 'フレンドリー'}
-                {style.tone === 'professional' && 'プロフェッショナル'}
-                {style.tone === 'casual' && 'カジュアル'}
-              </Badge>
-            </div>
-          )}
-          
           {Object.keys(style.requiredElements).length > 0 && (
             <div className="text-sm">
               <span className="text-gray-600">必須要素:</span>

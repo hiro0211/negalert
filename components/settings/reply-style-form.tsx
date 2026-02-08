@@ -32,7 +32,6 @@ export function ReplyStyleForm({ open, onOpenChange, onSubmit, initialData, mode
       ? Object.entries(initialData.requiredElements).map(([key, value]) => ({ key, value }))
       : [{ key: '店舗名', value: '' }, { key: '担当者名', value: '' }]
   );
-  const [tone, setTone] = useState(initialData?.tone || 'friendly');
   const [isDefault, setIsDefault] = useState(initialData?.isDefault || false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -103,7 +102,6 @@ export function ReplyStyleForm({ open, onOpenChange, onSubmit, initialData, mode
         description: description.trim() || null,
         exampleReplies: validExamples,
         requiredElements: elementsObject,
-        tone,
         isDefault,
       });
 
@@ -119,7 +117,6 @@ export function ReplyStyleForm({ open, onOpenChange, onSubmit, initialData, mode
       setDescription('');
       setExampleReplies(['']);
       setRequiredElements([{ key: '店舗名', value: '' }, { key: '担当者名', value: '' }]);
-      setTone('friendly');
       setIsDefault(false);
     } catch (err) {
       console.error('スタイル保存エラー:', err);
@@ -239,7 +236,7 @@ export function ReplyStyleForm({ open, onOpenChange, onSubmit, initialData, mode
                   <Input
                     value={element.value}
                     onChange={(e) => handleElementChange(index, 'value', e.target.value)}
-                    placeholder="例: 眉毛ファクトリー横浜店"
+                    placeholder="例: 〇〇美容院 渋谷店"
                     className="flex-1 text-gray-700 bg-white border-gray-300"
                     disabled={isSaving}
                   />
@@ -266,21 +263,6 @@ export function ReplyStyleForm({ open, onOpenChange, onSubmit, initialData, mode
                 要素を追加
               </Button>
             </div>
-          </div>
-
-          {/* トーン選択 */}
-          <div className="space-y-2">
-            <Label htmlFor="tone" className="text-gray-700">トーン</Label>
-            <Select value={tone} onValueChange={setTone} disabled={isSaving}>
-              <SelectTrigger id="tone" className="text-gray-700 bg-white border-gray-300">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-white border-gray-200">
-                <SelectItem value="friendly" className="text-gray-700">フレンドリー</SelectItem>
-                <SelectItem value="professional" className="text-gray-700">プロフェッショナル</SelectItem>
-                <SelectItem value="casual" className="text-gray-700">カジュアル</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           {/* デフォルト設定 */}

@@ -94,9 +94,6 @@ ${examplesText}
 【必ず含める要素】
 ${requiredElementsText}
 
-【トーン】
-${customStyle.tone || 'フレンドリー'}
-
 上記の参考返信文のスタイル、表現、構造を分析し、それを模倣して新しい返信案を生成してください。`;
   } else {
     // 標準プロンプト

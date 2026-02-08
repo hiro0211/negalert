@@ -66,7 +66,6 @@ export type ReplyStyle = {
   description: string | null;
   exampleReplies: string[];
   requiredElements: Record<string, string>;
-  tone: string | null;
   isDefault: boolean;
   createdBy: string;
   createdAt: Date;

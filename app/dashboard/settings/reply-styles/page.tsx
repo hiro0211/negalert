@@ -77,7 +77,6 @@ export default function ReplyStylesPage() {
         description: styleData.description ?? null,
         exampleReplies: styleData.exampleReplies!,
         requiredElements: styleData.requiredElements!,
-        tone: styleData.tone ?? null,
         isDefault: styleData.isDefault!,
       };
       await createStyle(createData);

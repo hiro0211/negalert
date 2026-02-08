@@ -44,7 +44,6 @@ export async function GET(
       description: style.description,
       exampleReplies: style.example_replies,
       requiredElements: style.required_elements || {},
-      tone: style.tone,
       isDefault: style.is_default,
       createdBy: style.created_by,
       createdAt: style.created_at,
@@ -84,7 +83,7 @@ export async function PUT(
 
     // リクエストボディ取得
     const body = await request.json();
-    const { name, description, exampleReplies, requiredElements, tone, isDefault } = body;
+    const { name, description, exampleReplies, requiredElements, isDefault } = body;
 
     // バリデーション
     if (name !== undefined && (!name || !name.trim())) {
@@ -129,7 +128,6 @@ export async function PUT(
     if (description !== undefined) updateData.description = description?.trim() || null;
     if (exampleReplies !== undefined) updateData.example_replies = exampleReplies;
     if (requiredElements !== undefined) updateData.required_elements = requiredElements;
-    if (tone !== undefined) updateData.tone = tone;
     if (isDefault !== undefined) updateData.is_default = isDefault;
 
     // 返信スタイルを更新
@@ -164,7 +162,6 @@ export async function PUT(
       description: updatedStyle.description,
       exampleReplies: updatedStyle.example_replies,
       requiredElements: updatedStyle.required_elements,
-      tone: updatedStyle.tone,
       isDefault: updatedStyle.is_default,
       createdBy: updatedStyle.created_by,
       createdAt: updatedStyle.created_at,

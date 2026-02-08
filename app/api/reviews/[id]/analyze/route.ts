@@ -95,7 +95,6 @@ export async function POST(
           description: style.description,
           exampleReplies: style.example_replies,
           requiredElements: style.required_elements || {},
-          tone: style.tone,
           isDefault: style.is_default,
           createdBy: style.created_by,
           createdAt: new Date(style.created_at),
