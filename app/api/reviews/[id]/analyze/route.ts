@@ -37,6 +37,15 @@ export async function POST(
     // 0. paramsを解決
     const { id } = await params;
     
+    // リクエストボディから replyStyleId を取得
+    let replyStyleId: string | null = null;
+    try {
+      const body = await request.json();
+      replyStyleId = body.replyStyleId || null;
+    } catch {
+      // ボディがない場合はnullのまま
+    }
+    
     // 1. 認証チェック
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -52,7 +61,7 @@ export async function POST(
       );
     }
     
-    console.log('🤖 AI分析を開始:', { reviewId: id, userId: user.id });
+    console.log('🤖 AI分析を開始:', { reviewId: id, userId: user.id, replyStyleId });
     
     // 2. レビュー情報をDBから取得
     let review;
@@ -69,12 +78,40 @@ export async function POST(
       );
     }
     
-    // 3. AI分析を実行
+    // 3. カスタムスタイルを取得（指定されている場合）
+    let customStyle = null;
+    if (replyStyleId) {
+      const { data: style, error: styleError } = await supabase
+        .from('reply_styles')
+        .select('*')
+        .eq('id', replyStyleId)
+        .single();
+      
+      if (!styleError && style) {
+        customStyle = {
+          id: style.id,
+          workspaceId: style.workspace_id,
+          name: style.name,
+          description: style.description,
+          exampleReplies: style.example_replies,
+          requiredElements: style.required_elements || {},
+          tone: style.tone,
+          isDefault: style.is_default,
+          createdBy: style.created_by,
+          createdAt: new Date(style.created_at),
+          updatedAt: new Date(style.updated_at),
+        };
+        console.log('📝 カスタムスタイル適用:', style.name);
+      }
+    }
+    
+    // 4. AI分析を実行
     let analysisResult;
     try {
       analysisResult = await analyzeReviewWithAI(
         review.comment || '',
-        review.rating
+        review.rating,
+        customStyle
       );
     } catch (aiError) {
       console.error('AI分析エラー:', aiError);
@@ -91,7 +128,7 @@ export async function POST(
       );
     }
     
-    // 4. 分析結果をDBに保存
+    // 5. 分析結果をDBに保存
     try {
       await updateReviewAnalysisInDb(id, analysisResult, supabase);
     } catch (dbError) {
@@ -105,7 +142,7 @@ export async function POST(
       );
     }
     
-    // 5. 更新後のレビュー情報をDBから取得
+    // 6. 更新後のレビュー情報をDBから取得
     let updatedReview;
     try {
       updatedReview = await getReviewFromDb(id, supabase);

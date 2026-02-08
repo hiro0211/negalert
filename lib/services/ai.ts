@@ -3,6 +3,7 @@
  */
 
 import OpenAI from 'openai';
+import { ReplyStyle } from '@/lib/types';
 
 /**
  * AI分析結果の型定義
@@ -31,11 +32,13 @@ export interface WeeklyReportResult {
  * 
  * @param reviewText - レビュー本文
  * @param rating - 評価（1-5）
+ * @param customStyle - カスタム返信スタイル（オプション）
  * @returns AI分析結果
  */
 export async function analyzeReviewWithAI(
   reviewText: string,
-  rating: number
+  rating: number,
+  customStyle?: ReplyStyle | null
 ): Promise<AIAnalysisResult> {
   // 環境変数チェック
   const apiKey = process.env.OPENAI_API_KEY;
@@ -50,7 +53,7 @@ export async function analyzeReviewWithAI(
   });
   
   // システムプロンプトの構築
-  const systemPrompt = `あなたは日本の実店舗の経験豊富なベテラン店長です。
+  let systemPrompt = `あなたは日本の実店舗の経験豊富なベテラン店長です。
 顧客レビューを分析し、以下のJSON形式で結果を返してください。
 
 {
@@ -61,15 +64,49 @@ export async function analyzeReviewWithAI(
   "replyDraft": "丁寧な返信案"
 }
 
-返信案のガイドライン:
-- ★1-2（低評価）: 謝罪重視、具体的な改善提案を含める
-- ★3（中評価）: バランス型、感謝と改善意欲を示す
-- ★4-5（高評価）: 感謝重視、今後への期待を示す
-
 リスクレベルの判定基準:
 - high: ★1-2かつ強い不満表現、再訪意向の喪失
 - medium: ★3または具体的な改善要望
 - low: ★4-5または具体的な問題なし`;
+
+  // カスタムスタイルが指定されている場合、プロンプトを拡張
+  if (customStyle) {
+    const examplesText = customStyle.exampleReplies
+      .map((example, i) => `【例${i + 1}】\n${example}`)
+      .join('\n\n');
+    
+    const requiredElementsText = Object.entries(customStyle.requiredElements)
+      .map(([key, value]) => `- ${key}: ${value}`)
+      .join('\n');
+
+    systemPrompt += `
+
+返信案のガイドライン - 以下のカスタムスタイルに従ってください:
+
+【カスタムスタイル名】
+${customStyle.name}
+
+【参考返信文】
+以下の返信文を参考に、同じトーン・構造・表現を使って返信案を生成してください。
+
+${examplesText}
+
+【必ず含める要素】
+${requiredElementsText}
+
+【トーン】
+${customStyle.tone || 'フレンドリー'}
+
+上記の参考返信文のスタイル、表現、構造を分析し、それを模倣して新しい返信案を生成してください。`;
+  } else {
+    // 標準プロンプト
+    systemPrompt += `
+
+返信案のガイドライン:
+- ★1-2（低評価）: 謝罪重視、具体的な改善提案を含める
+- ★3（中評価）: バランス型、感謝と改善意欲を示す
+- ★4-5（高評価）: 感謝重視、今後への期待を示す`;
+  }
 
   // ユーザープロンプトの構築
   const userPrompt = `評価: ★${rating}

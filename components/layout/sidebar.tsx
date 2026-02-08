@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Mail, CheckSquare, Settings, CreditCard } from 'lucide-react';
+import { LayoutDashboard, Mail, CheckSquare, Settings, CreditCard, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
@@ -17,6 +17,11 @@ const navItems = [
     title: 'Inbox',
     href: '/dashboard/inbox',
     icon: Mail,
+  },
+  {
+    title: '返信スタイル',
+    href: '/dashboard/settings/reply-styles',
+    icon: MessageSquare,
   },
   // TODO機能を一時的に非表示
   // {
@@ -52,7 +57,8 @@ function SidebarContent() {
       </div>
       <nav className="flex-1 space-y-1 px-3 py-4">
         {navItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname?.startsWith(item.href));
+          // 正確なパスマッチング：完全一致のみをアクティブとする
+          const isActive = pathname === item.href;
           return (
             <Link
               key={item.href}

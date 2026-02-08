@@ -58,3 +58,18 @@ export type FilterState = {
   periodFilter: '7days' | '30days' | 'custom';
   searchQuery: string;
 };
+
+export type ReplyStyle = {
+  id: string;
+  workspaceId: string;
+  name: string;
+  description: string | null;
+  exampleReplies: string[];
+  requiredElements: Record<string, string>;
+  tone: string | null;
+  isDefault: boolean;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+

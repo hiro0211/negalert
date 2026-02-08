@@ -171,8 +171,8 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <div className="text-sm font-medium text-gray-600">{user?.name || 'ユーザー'}</div>
                 <div className="text-xs text-gray-600">{user?.email || ''}</div>
               </div>
-              <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full bg-primary text-gray-800">
-                <User className="h-4 w-4 md:h-5 md:w-5" />
+              <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full bg-white text-gray-800">
+                <User className="h-4 w-4 md:h-5 md:w-5 " />
               </div>
             </Button>
           </DropdownMenuTrigger>
