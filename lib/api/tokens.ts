@@ -4,6 +4,8 @@
 
 import { SupabaseClient } from '@supabase/supabase-js';
 import { createClient as createServerClient } from '../supabase/server';
+import { validateEncryptionKey } from '../utils/crypto-validation';
+import { logError } from '../utils/error-handler';
 
 export interface UserToken {
   id: string;
@@ -34,11 +36,8 @@ export interface SaveTokenParams {
 export async function saveGoogleToken(params: SaveTokenParams): Promise<void> {
   const { supabase, userId, accessToken, refreshToken, expiresAt } = params;
   
-  // 暗号化キーの確認
-  const encryptionKey = process.env.DB_ENCRYPTION_KEY;
-  if (!encryptionKey) {
-    throw new Error('DB_ENCRYPTION_KEY環境変数が設定されていません');
-  }
+  // 暗号化キーの検証（強化版）
+  const encryptionKey = validateEncryptionKey(process.env.DB_ENCRYPTION_KEY);
   
   // expires_atをISO文字列に変換
   const expiresAtTimestamp = expiresAt 
@@ -73,6 +72,7 @@ export async function saveGoogleToken(params: SaveTokenParams): Promise<void> {
   });
   
   if (error) {
+    logError('saveGoogleToken', error, { userId });
     throw new Error('Tokenの保存に失敗しました');
   }
 }
@@ -90,11 +90,8 @@ export async function getGoogleToken(
 ): Promise<UserToken | null> {
   const client = supabase || await createServerClient();
   
-  // 暗号化キーの確認
-  const encryptionKey = process.env.DB_ENCRYPTION_KEY;
-  if (!encryptionKey) {
-    throw new Error('DB_ENCRYPTION_KEY環境変数が設定されていません');
-  }
+  // 暗号化キーの検証（強化版）
+  const encryptionKey = validateEncryptionKey(process.env.DB_ENCRYPTION_KEY);
   
   // 復号化してトークンを取得（生SQLを使用）
   const { data, error } = await client.rpc('get_decrypted_token', {
@@ -108,6 +105,7 @@ export async function getGoogleToken(
       // レコードが見つからない場合
       return null;
     }
+    logError('getGoogleToken', error, { userId });
     throw new Error('Tokenの取得に失敗しました');
   }
   
@@ -136,6 +134,7 @@ export async function deleteGoogleToken(
     .eq('provider', 'google');
   
   if (error) {
+    logError('deleteGoogleToken', error, { userId });
     throw new Error('Tokenの削除に失敗しました');
   }
 }

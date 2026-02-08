@@ -2,12 +2,19 @@
  * レビューのAI分析を実行するAPIエンドポイント
  * 
  * POST /api/reviews/[id]/analyze - レビューをAI分析して結果をDBに保存
+ * 
+ * セキュリティ対策:
+ * - 認証必須
+ * - レート制限（10リクエスト/分）- OpenAI API課金保護
+ * - 権限チェック
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { getReviewFromDb, updateReviewAnalysisInDb } from '@/lib/api/reviews-db';
+import { getReviewFromDb, updateReviewAnalysisInDb, checkReviewAccess } from '@/lib/api/reviews-db';
 import { analyzeReviewWithAI } from '@/lib/services/ai';
+import { rateLimitAI, createRateLimitResponse } from '@/lib/middleware/rate-limit';
+import { logError, createSafeError } from '@/lib/utils/error-handler';
 
 /**
  * レビューのAI分析応答型
@@ -37,21 +44,12 @@ export async function POST(
     // 0. paramsを解決
     const { id } = await params;
     
-    // リクエストボディから replyStyleId を取得
-    let replyStyleId: string | null = null;
-    try {
-      const body = await request.json();
-      replyStyleId = body.replyStyleId || null;
-    } catch {
-      // ボディがない場合はnullのまま
-    }
-    
     // 1. 認証チェック
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {
-      console.error('認証エラー:', authError);
+      logError('AI分析認証エラー', authError);
       return NextResponse.json(
         {
           success: false,
@@ -61,7 +59,32 @@ export async function POST(
       );
     }
     
-    console.log('🤖 AI分析を開始:', { reviewId: id, userId: user.id, replyStyleId });
+    // 2. レート制限チェック（AI分析は課金対象のためコスト保護）
+    const rateLimitResult = rateLimitAI(user.id);
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult.resetTime);
+    }
+    
+    // 3. 権限チェック
+    const hasAccess = await checkReviewAccess(id, user.id, supabase);
+    if (!hasAccess) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'このレビューへのアクセス権限がありません',
+        } as AnalyzeReviewResponse,
+        { status: 403 }
+      );
+    }
+    
+    // リクエストボディから replyStyleId を取得
+    let replyStyleId: string | null = null;
+    try {
+      const body = await request.json();
+      replyStyleId = body.replyStyleId || null;
+    } catch {
+      // ボディがない場合はnullのまま
+    }
     
     // 2. レビュー情報をDBから取得
     let review;
@@ -163,12 +186,13 @@ export async function POST(
     );
     
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logError('AI分析予期しないエラー', error);
+    const safeError = createSafeError(error, '予期しないエラーが発生しました');
     
     return NextResponse.json(
       {
         success: false,
-        error: '予期しないエラーが発生しました',
+        error: safeError.message,
       } as AnalyzeReviewResponse,
       { status: 500 }
     );

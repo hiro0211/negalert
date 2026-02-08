@@ -4,6 +4,7 @@
  */
 
 import { SupabaseClient } from '@supabase/supabase-js';
+import { handleDatabaseError, logError } from '../utils/error-handler';
 
 /**
  * レビューの返信をDBに保存
@@ -30,7 +31,8 @@ export async function updateReviewReplyInDb(
     .eq('id', reviewId);
   
   if (error) {
-    throw new Error(`DB更新に失敗しました: ${error.message}`);
+    logError('updateReviewReplyInDb', error, { reviewId });
+    throw new Error(handleDatabaseError(error));
   }
 }
 
@@ -55,12 +57,14 @@ export async function deleteReviewReplyInDb(
     .eq('id', reviewId);
   
   if (error) {
-    throw new Error(`DB更新に失敗しました: ${error.message}`);
+    logError('deleteReviewReplyInDb', error, { reviewId });
+    throw new Error(handleDatabaseError(error));
   }
 }
 
 /**
  * レビュー情報をDBから取得
+ * セキュリティ: 必要なカラムのみを取得（select('*')は使用しない）
  * 
  * @param reviewId - レビューID（UUID）
  * @param supabase - Supabaseクライアント（必須）
@@ -70,9 +74,27 @@ export async function getReviewFromDb(
   reviewId: string,
   supabase: SupabaseClient
 ): Promise<any> {
+  // セキュリティ: 必要なカラムのみを明示的に取得
   const { data, error } = await supabase
     .from('reviews')
-    .select('*')
+    .select(`
+      id,
+      workspace_id,
+      google_review_id,
+      author_name,
+      author_photo_url,
+      rating,
+      comment,
+      review_created_at,
+      status,
+      reply_text,
+      reply_created_at,
+      ai_summary,
+      risk,
+      ai_categories,
+      ai_risk_reason,
+      updated_at
+    `)
     .eq('id', reviewId)
     .single();
   
@@ -81,7 +103,8 @@ export async function getReviewFromDb(
       throw new Error('レビューが見つかりません');
     }
     
-    throw new Error(`レビュー取得に失敗しました: ${error.message}`);
+    logError('getReviewFromDb', error, { reviewId });
+    throw new Error(handleDatabaseError(error));
   }
   
   return data;
@@ -89,6 +112,7 @@ export async function getReviewFromDb(
 
 /**
  * ユーザーがレビューにアクセスする権限があるかチェック
+ * セキュリティ: RLSに加えて明示的な所有権チェックを実施
  * 
  * @param reviewId - レビューID（UUID）
  * @param userId - ユーザーID（UUID）
@@ -110,7 +134,16 @@ export async function checkReviewAccess(
     return false;
   }
   
-  // RLSで自動的にフィルタリングされるため、データが取得できればアクセス権限あり
+  // 明示的にユーザーIDを検証（RLSに加えての二重チェック）
+  const workspaceUserId = (data as any).workspaces?.user_id;
+  if (workspaceUserId && workspaceUserId !== userId) {
+    logError('checkReviewAccess', new Error('Unauthorized access attempt'), {
+      reviewId,
+      requestedUserId: userId,
+    });
+    return false;
+  }
+  
   return true;
 }
 
@@ -144,6 +177,7 @@ export async function updateReviewAnalysisInDb(
     .eq('id', reviewId);
   
   if (error) {
-    throw new Error(`DB更新に失敗しました: ${error.message}`);
+    logError('updateReviewAnalysisInDb', error, { reviewId });
+    throw new Error(handleDatabaseError(error));
   }
 }

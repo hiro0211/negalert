@@ -1,10 +1,14 @@
 /**
  * モック用: Google Places APIから他店舗のレビューをインポート
- * モックモード（NEXT_PUBLIC_USE_MOCK_DATA=true）でのみ動作
+ * モックモード（USE_MOCK_DATA=true）でのみ動作
+ * 
+ * セキュリティ注意: このエンドポイントは開発/デモ環境専用です
+ * 本番環境では USE_MOCK_DATA を設定しないでください
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { logError, createSafeError } from '@/lib/utils/error-handler';
 import { getWorkspaces } from '@/lib/api/workspaces';
 
 /**
@@ -55,9 +59,21 @@ interface ImportPlaceReviewsResponse {
 export async function POST(request: NextRequest) {
   try {
     // 1. モックモードチェック（最優先）
-    if (process.env.NEXT_PUBLIC_USE_MOCK_DATA !== 'true') {
+    // セキュリティ: サーバーサイド専用の環境変数を使用（NEXT_PUBLIC_ではない）
+    const isMockMode = process.env.USE_MOCK_DATA === 'true' || 
+                       process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+    
+    if (!isMockMode) {
       return NextResponse.json(
         { success: false, error: 'このエンドポイントはモックモード専用です' } as ImportPlaceReviewsResponse,
+        { status: 403 }
+      );
+    }
+    
+    // 本番環境では追加の保護
+    if (process.env.NODE_ENV === 'production' && !process.env.USE_MOCK_DATA) {
+      return NextResponse.json(
+        { success: false, error: '本番環境ではこのエンドポイントは使用できません' } as ImportPlaceReviewsResponse,
         { status: 403 }
       );
     }
@@ -207,9 +223,10 @@ export async function POST(request: NextRequest) {
     } as ImportPlaceReviewsResponse);
 
   } catch (error) {
-    console.error('予期しないエラー:', error);
+    logError('import-place-reviews', error);
+    const safeError = createSafeError(error, 'レビューのインポートに失敗しました');
     return NextResponse.json(
-      { success: false, error: String(error) } as ImportPlaceReviewsResponse,
+      { success: false, error: safeError.message } as ImportPlaceReviewsResponse,
       { status: 500 }
     );
   }
