@@ -5,7 +5,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ToastAction } from '@/components/ui/toast';
-import { Search, User, LogOut, RefreshCw, Menu } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Search, User, LogOut, RefreshCw, Menu, Settings } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useToast } from '@/lib/hooks/useToast';
 
@@ -18,6 +36,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const { toast } = useToast();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   const handleSync = async () => {
     try {
@@ -76,14 +95,17 @@ export function Header({ onMenuClick }: HeaderProps) {
   };
 
   const handleLogout = async () => {
-    if (confirm('ログアウトしますか?')) {
-      try {
-        setIsLoggingOut(true);
-        await logout();
-      } catch (error) {
-        alert('ログアウトに失敗しました');
-        setIsLoggingOut(false);
-      }
+    try {
+      setIsLoggingOut(true);
+      await logout();
+    } catch (error) {
+      toast({
+        title: "エラー",
+        description: "ログアウトに失敗しました",
+        variant: "destructive",
+      });
+      setIsLoggingOut(false);
+      setShowLogoutDialog(false);
     }
   };
 
@@ -140,24 +162,65 @@ export function Header({ onMenuClick }: HeaderProps) {
           <span className="hidden sm:inline">{isSyncing ? '同期中...' : 'レビューを更新'}</span>
           <span className="sm:hidden">{isSyncing ? '同期中' : '更新'}</span>
         </Button>
-        <div className="flex items-center gap-2">
-          <div className="hidden md:block text-right">
-            <div className="text-sm font-medium text-gray-600">{user?.name || 'ユーザー'}</div>
-            <div className="text-xs text-gray-600">{user?.email || ''}</div>
-          </div>
-          <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full bg-primary text-white">
-            <User className="h-4 w-4 md:h-5 md:w-5" />
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            className="text-gray-600"
-          >
-            <LogOut className="h-4 w-4" />
-          </Button>
-        </div>
+        
+        {/* User Dropdown Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="flex items-center gap-2 hover:bg-gray-100">
+              <div className="hidden md:block text-right">
+                <div className="text-sm font-medium text-gray-600">{user?.name || 'ユーザー'}</div>
+                <div className="text-xs text-gray-600">{user?.email || ''}</div>
+              </div>
+              <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full bg-primary text-gray-800">
+                <User className="h-4 w-4 md:h-5 md:w-5" />
+              </div>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{user?.name || 'ユーザー'}</p>
+                <p className="text-xs leading-none text-gray-500">{user?.email || ''}</p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {/* <DropdownMenuItem>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>設定</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator /> */}
+            <DropdownMenuItem 
+              className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+              onClick={() => setShowLogoutDialog(true)}
+              disabled={isLoggingOut}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>ログアウト</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Logout Confirmation Dialog */}
+        <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>ログアウトしますか？</AlertDialogTitle>
+              <AlertDialogDescription>
+                ログアウトすると、再度ログインが必要になります。
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isLoggingOut}>キャンセル</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {isLoggingOut ? 'ログアウト中...' : 'ログアウト'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </header>
   );

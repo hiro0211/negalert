@@ -97,21 +97,6 @@ export async function deleteReviewReply(id: string): Promise<void> {
 }
 
 /**
- * 返信の下書きを保存
- */
-export async function saveReplyDraft(
-  id: string,
-  draft: string
-): Promise<void> {
-  // 現在: モック実装（何もしない）
-  // 将来: Supabaseに下書きを保存
-  
-  console.log('[Mock] 下書きを保存:', { id, draft });
-  
-  await new Promise(resolve => setTimeout(resolve, 300));
-}
-
-/**
  * レビュー情報を更新
  */
 export async function updateReview(

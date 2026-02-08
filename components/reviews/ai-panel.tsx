@@ -142,15 +142,6 @@ export function AIPanel({ review, onAnalysisComplete }: AIPanelProps) {
               )}
             </div>
             
-            {review.replyDraft && (
-              <div>
-                <h4 className="mb-2 text-sm font-semibold">AI生成返信案</h4>
-                <div className="rounded-lg bg-green-50 p-3 border border-green-200">
-                  <p className="text-sm leading-relaxed text-green-900">{review.replyDraft}</p>
-                </div>
-              </div>
-            )}
-            
             <Button
               size="sm"
               variant="outline"

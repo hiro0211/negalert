@@ -11,10 +11,11 @@ import { RiskBadge } from '@/components/common/risk-badge';
 import { Review } from '@/lib/types';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { Brain, Sparkles, AlertCircle, Copy, Save, Send, CheckCircle2 } from 'lucide-react';
-import { saveReplyDraft, updateReviewReply } from '@/lib/api/reviews';
+import { Brain, Sparkles, AlertCircle, Copy, Send, CheckCircle2 } from 'lucide-react';
+import { updateReviewReply } from '@/lib/api/reviews';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { InlineLoadingSpinner } from '@/components/common/loading-spinner';
+import { useToast } from '@/lib/hooks/useToast';
 
 interface ReviewSlideOverProps {
   review: Review;
@@ -23,13 +24,12 @@ interface ReviewSlideOverProps {
 }
 
 export function ReviewSlideOver({ review: initialReview, open, onOpenChange }: ReviewSlideOverProps) {
+  const { toast } = useToast();
   const [review, setReview] = useState(initialReview);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [replyText, setReplyText] = useState(review.replyDraft || review.reply || '');
-  const [isSaving, setIsSaving] = useState(false);
+  const [replyText, setReplyText] = useState(review.reply || '');
   const [isPublishing, setIsPublishing] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
   const [replyError, setReplyError] = useState<string | null>(null);
   const [replySuccess, setReplySuccess] = useState<string | null>(null);
 
@@ -69,7 +69,6 @@ export function ReviewSlideOver({ review: initialReview, open, onOpenChange }: R
         aiCategories: analysis.categories,
         risk: analysis.risk,
         aiRiskReason: analysis.riskReason,
-        replyDraft: analysis.replyDraft,
       });
       
       // 返信案も更新
@@ -87,21 +86,10 @@ export function ReviewSlideOver({ review: initialReview, open, onOpenChange }: R
 
   const handleCopy = () => {
     navigator.clipboard.writeText(replyText);
-    alert('返信案をコピーしました');
-  };
-
-  const handleSave = async () => {
-    try {
-      setIsSaving(true);
-      await saveReplyDraft(review.id, replyText);
-      setIsSaved(true);
-      setTimeout(() => setIsSaved(false), 2000);
-    } catch (error) {
-      console.error('下書き保存エラー:', error);
-      alert('下書きの保存に失敗しました');
-    } finally {
-      setIsSaving(false);
-    }
+    toast({
+      title: "✓ コピーしました",
+      description: "返信案をクリップボードにコピーしました",
+    });
   };
 
   const handlePublish = async () => {
@@ -310,50 +298,41 @@ export function ReviewSlideOver({ review: initialReview, open, onOpenChange }: R
               disabled={isPublishing}
             />
 
-            <div className="flex flex-col sm:flex-row gap-2">
+            <div className="space-y-3">
+              {/* 公開ボタン（強調） */}
+              <div className="space-y-2">
+                <Button
+                  onClick={handlePublish}
+                  size="lg"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-lg font-semibold shadow-md"
+                  disabled={isPublishing}
+                >
+                  {isPublishing ? (
+                    <>
+                      <InlineLoadingSpinner className="mr-2" />
+                      {hasExistingReply ? '更新中...' : 'Googleに投稿中...'}
+                    </>
+                  ) : (
+                    <>
+                      <Send className="mr-2 h-5 w-5" />
+                      {hasExistingReply ? 'Googleに返信を更新' : 'Googleに返信を投稿'}
+                    </>
+                  )}
+                </Button>
+                <p className="text-sm text-gray-600 text-center">
+                  このアプリから直接Googleレビューに返信できます
+                </p>
+              </div>
+
+              {/* コピーボタン */}
               <Button
                 variant="outline"
                 onClick={handleCopy}
-                className="flex-1"
-                disabled={isSaving || isPublishing}
+                className="w-full"
+                disabled={isPublishing}
               >
                 <Copy className="mr-2 h-4 w-4" />
                 コピー
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleSave}
-                className="flex-1"
-                disabled={isSaving || isPublishing}
-              >
-                {isSaving ? (
-                  <>
-                    <InlineLoadingSpinner className="mr-2" />
-                    保存中...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    {isSaved ? '保存済み' : '下書き保存'}
-                  </>
-                )}
-              </Button>
-              <Button
-                onClick={handlePublish}
-                className="flex-1 text-gray-800"
-                disabled={isSaving || isPublishing}
-              >
-                {isPublishing ? (
-                  <>
-                    <InlineLoadingSpinner className="mr-2" />
-                    {hasExistingReply ? '更新中...' : '公開中...'}
-                  </>
-                ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4 text-gray-600" />
-                    {hasExistingReply ? '更新' : '公開'}
-                  </>
-                )}
               </Button>
             </div>
           </div>

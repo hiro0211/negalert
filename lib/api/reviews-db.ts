@@ -139,7 +139,6 @@ export async function updateReviewAnalysisInDb(
       risk: analysisResult.risk,
       ai_categories: analysisResult.categories,
       ai_risk_reason: analysisResult.riskReason,
-      reply_draft: analysisResult.replyDraft,
       updated_at: new Date().toISOString(),
     })
     .eq('id', reviewId);

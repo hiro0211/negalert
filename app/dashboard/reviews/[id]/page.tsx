@@ -38,7 +38,6 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ id: str
         aiCategories: data.analysis.categories,
         aiRiskReason: data.analysis.riskReason,
         risk: data.analysis.risk,
-        replyDraft: data.analysis.replyDraft,
       });
       console.log('✅ UI更新完了（モックモード）');
     } else {

@@ -12,7 +12,6 @@ export type Review = {
   aiRiskReason: string | null;
   reply?: string;
   replyCreatedAt?: Date;
-  replyDraft?: string | null;
   photos?: string[];
 };
 

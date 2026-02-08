@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CreditCard, TrendingUp } from 'lucide-react';
+import { useToast } from '@/lib/hooks/useToast';
 
 export default function BillingPage() {
+  const { toast } = useToast();
   return (
     <div className="space-y-6">
       <div>
@@ -55,7 +57,10 @@ export default function BillingPage() {
               プレミアムプランにアップグレードすると、月1000件のレビューまで対応でき、高度なAI分析機能が利用できます。
             </p>
             <Button
-              onClick={() => alert('プラン変更機能は現在開発中です（モック）')}
+              onClick={() => toast({
+                title: "開発中",
+                description: "プラン変更機能は現在開発中です",
+              })}
               className="text-gray-700"
             >
               プランを変更

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, CheckSquare } from 'lucide-react';
 import { Review } from '@/lib/types';
+import { useToast } from '@/lib/hooks/useToast';
 
 interface TodoGeneratorProps {
   review: Review;
@@ -29,8 +30,13 @@ const suggestedTodos = [
 ];
 
 export function TodoGenerator({ review }: TodoGeneratorProps) {
+  const { toast } = useToast();
+  
   const handleAddTodo = (todoTitle: string) => {
-    alert(`ToDoに追加しました: ${todoTitle}`);
+    toast({
+      title: "✓ ToDoに追加しました",
+      description: todoTitle,
+    });
   };
 
   return (

@@ -33,7 +33,6 @@ export type UpdateTodoInput = Partial<Omit<Todo, 'id'>>;
 
 export type UpdateReviewInput = {
   reply?: string;
-  replyDraft?: string;
   status?: Review['status'];
 };
 

@@ -7,9 +7,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { InlineLoadingSpinner } from '@/components/common/loading-spinner';
-import { Copy, Save, Send, Sparkles, Trash2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Copy, Send, Sparkles, Trash2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Review } from '@/lib/types';
-import { saveReplyDraft, updateReviewReply, deleteReviewReply } from '@/lib/api/reviews';
+import { updateReviewReply, deleteReviewReply } from '@/lib/api/reviews';
+import { useToast } from '@/lib/hooks/useToast';
 
 interface ReplyEditorProps {
   review: Review;
@@ -23,12 +24,11 @@ const toneSamples = {
 };
 
 export function ReplyEditor({ review, onReplyUpdated }: ReplyEditorProps) {
-  const [replyText, setReplyText] = useState(review.replyDraft || review.reply || '');
+  const { toast } = useToast();
+  const [replyText, setReplyText] = useState(review.reply || '');
   const [selectedTone, setSelectedTone] = useState<keyof typeof toneSamples>('polite');
-  const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -36,22 +36,10 @@ export function ReplyEditor({ review, onReplyUpdated }: ReplyEditorProps) {
 
   const handleCopy = () => {
     navigator.clipboard.writeText(replyText);
-    alert('返信案をコピーしました');
-  };
-
-  const handleSave = async () => {
-    try {
-      setIsSaving(true);
-      // API層を経由して下書きを保存
-      await saveReplyDraft(review.id, replyText);
-      setIsSaved(true);
-      setTimeout(() => setIsSaved(false), 2000);
-    } catch (error) {
-      console.error('下書き保存エラー:', error);
-      alert('下書きの保存に失敗しました');
-    } finally {
-      setIsSaving(false);
-    }
+    toast({
+      title: "✓ コピーしました",
+      description: "返信案をクリップボードにコピーしました",
+    });
   };
 
   const handlePublish = async () => {
@@ -204,70 +192,64 @@ export function ReplyEditor({ review, onReplyUpdated }: ReplyEditorProps) {
           disabled={isPublishing || isDeleting}
         />
 
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={handleCopy}
-            className="flex-1"
-            disabled={isSaving || isPublishing || isDeleting}
-          >
-            <Copy className="mr-2 h-4 w-4" />
-            コピー
-          </Button>
-          <Button
-            variant="outline"
-            onClick={handleSave}
-            className="flex-1"
-            disabled={isSaving || isPublishing || isDeleting}
-          >
-            {isSaving ? (
-              <>
-                <InlineLoadingSpinner className="mr-2" />
-                保存中...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                {isSaved ? '保存済み' : '下書き保存'}
-              </>
-            )}
-          </Button>
-          <Button
-            onClick={handlePublish}
-            className="flex-1"
-            disabled={isSaving || isPublishing || isDeleting}
-          >
-            {isPublishing ? (
-              <>
-                <InlineLoadingSpinner className="mr-2" />
-                {hasExistingReply ? '更新中...' : '公開中...'}
-              </>
-            ) : (
-              <>
-                <Send className="mr-2 h-4 w-4" />
-                {hasExistingReply ? '更新' : '公開'}
-              </>
-            )}
-          </Button>
-          {hasExistingReply && (
+        <div className="space-y-3">
+          {/* 公開ボタン（強調） */}
+          <div className="space-y-2">
             <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={isSaving || isPublishing || isDeleting}
+              onClick={handlePublish}
+              size="lg"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-lg font-semibold shadow-md"
+              disabled={isPublishing || isDeleting}
             >
-              {isDeleting ? (
+              {isPublishing ? (
                 <>
                   <InlineLoadingSpinner className="mr-2" />
-                  削除中...
+                  {hasExistingReply ? '更新中...' : 'Googleに投稿中...'}
                 </>
               ) : (
                 <>
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  削除
+                  <Send className="mr-2 h-5 w-5" />
+                  {hasExistingReply ? 'Googleに返信を更新' : 'Googleに返信を投稿'}
                 </>
               )}
             </Button>
-          )}
+            <p className="text-sm text-gray-600 text-center">
+              このアプリから直接Googleレビューに返信できます
+            </p>
+          </div>
+
+          {/* コピーと削除ボタン */}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={handleCopy}
+              className="flex-1"
+              disabled={isPublishing || isDeleting}
+            >
+              <Copy className="mr-2 h-4 w-4" />
+              コピー
+            </Button>
+            {hasExistingReply && (
+              <Button
+                variant="destructive"
+                onClick={handleDelete}
+                className="flex-1"
+                disabled={isPublishing || isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <InlineLoadingSpinner className="mr-2" />
+                    削除中...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    削除
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>

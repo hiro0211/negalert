@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { LoadingSpinner } from '@/components/common/loading-spinner';
 import { ErrorMessage } from '@/components/common/error-message';
 import { useTodos } from '@/lib/hooks/useTodos';
+import { useToast } from '@/lib/hooks/useToast';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { Plus, Trash2 } from 'lucide-react';
@@ -20,6 +21,7 @@ import { Plus, Trash2 } from 'lucide-react';
 export default function TodosPage() {
   // カスタムフックでTODOデータを取得・操作
   const { todos, loading, error, refetch, toggleComplete, remove } = useTodos();
+  const { toast } = useToast();
   
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -35,7 +37,11 @@ export default function TodosPage() {
       await toggleComplete(id);
     } catch (err) {
       console.error('TODO完了状態の変更に失敗:', err);
-      alert('TODO完了状態の変更に失敗しました');
+      toast({
+        title: "エラー",
+        description: "TODO完了状態の変更に失敗しました",
+        variant: "destructive",
+      });
     }
   };
 
@@ -48,7 +54,11 @@ export default function TodosPage() {
       await remove(id);
     } catch (err) {
       console.error('TODO削除に失敗:', err);
-      alert('TODO削除に失敗しました');
+      toast({
+        title: "エラー",
+        description: "TODO削除に失敗しました",
+        variant: "destructive",
+      });
     }
   };
 

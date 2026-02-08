@@ -69,7 +69,6 @@ export function convertDbReviewToReview(dbReview: any): Review {
     aiRiskReason: dbReview.ai_risk_reason || null,
     reply: dbReview.reply_text || undefined,
     replyCreatedAt: dbReview.reply_created_at ? new Date(dbReview.reply_created_at) : undefined,
-    replyDraft: dbReview.reply_draft || null,
     photos: [],
   };
 }
