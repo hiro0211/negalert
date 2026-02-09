@@ -57,7 +57,7 @@ function LoginForm() {
           <Button
             onClick={handleGoogleLogin}
             disabled={isLoading}
-            className="w-full text-gray-600 font-semibold"
+            className="w-full text-white bg-blue-600 hover:bg-blue-700 font-semibold"
             size="lg"
           >
             {isLoading ? (

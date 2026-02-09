@@ -20,8 +20,8 @@ export default function LandingPage() {
               <MessageSquare className="h-8 w-8 text-blue-600" />
               <h1 className="text-2xl font-bold text-gray-900">NegAlert</h1>
             </div>
-            <Link href="/login" className="text-gray-900">
-              <Button variant="default" size="lg">
+            <Link href="/login">
+              <Button size="lg" className="text-white bg-blue-600 hover:bg-blue-700">
                 ログイン
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -42,8 +42,8 @@ export default function LandingPage() {
             <br />
             ネガティブレビューの早期発見で、ビジネスを守ります。
           </p>
-          <Link href="/login" className="text-gray-900">
-            <Button size="lg" className="text-lg px-8 py-6 text-gray-700">
+          <Link href="/login">
+            <Button size="lg" className="text-lg px-8 py-6 text-white bg-blue-600 hover:bg-blue-700">
               今すぐ始める（無料）
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
@@ -184,7 +184,7 @@ export default function LandingPage() {
             無料で全機能をお試しいただけます
           </p>
           <Link href="/login">
-            <Button size="lg" variant="secondary" className="text-lg px-8 py-6">
+            <Button size="lg" className="text-lg px-8 py-6 text-white bg-blue-600 hover:bg-blue-700">
               無料で始める
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
