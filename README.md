@@ -4,8 +4,6 @@ NegAlertは、Googleレビューに特化したレビュー管理SaaSのMVPで�
 
 ## 🎯 プロジェクト概要
 
-このプロジェクトは、**UIのみの実装**です。バックエンド、データベース、API連携は**すべてモック**で動作します。ただし、将来的にSupabase/Auth/Stripeなどに差し替えやすい構造になっています。
-
 ### 主な特徴
 
 - ✅ Next.js 14 App Router + TypeScript
